@@ -68,6 +68,31 @@
             border-radius: 5px;
             display: none;
         }
+        #links-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #links-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #links-container ul li {
+            display: inline-block;
+            margin: 10px;
+        }
+        #links-container ul li a {
+            text-decoration: none;
+            font-size: 1.2em;
+            color: #4caf50;
+            border: 2px solid #4caf50;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #links-container ul li a:hover {
+            background-color: #4caf50;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -83,9 +108,23 @@
             <option value="30">15 seconds</option>
             <option value="60">1 minute </option>
             <option value="120">2 minutes</option>
-            <option value="240"4 selected>4 minute</option> <!-- One minute option -->
+            <option value="240"4 selected>4 minutes</option> <!-- Default timer -->
         </select>
-        <span id="timer">5</span>
+        <span id="timer">240</span>
+    </div>
+    <div id="links-container">
+        <ul>
+            <li><a href="1.html" target="gallery-frame">Page 1</a></li>
+            <li><a href="2.html" target="gallery-frame">Page 2</a></li>
+            <li><a href="3.html" target="gallery-frame">Page 3</a></li>
+            <li><a href="4.html" target="gallery-frame">Page 4</a></li>
+            <li><a href="5.html" target="gallery-frame">Page 5</a></li>
+            <li><a href="1.html" target="gallery-frame">Page 1</a></li>
+            <li><a href="2.html" target="gallery-frame">Page 2</a></li>
+            <li><a href="3.html" target="gallery-frame">Page 3</a></li>
+            <li><a href="4.html" target="gallery-frame">Page 4</a></li>
+            <li><a href="5.html" target="gallery-frame">Page 5</a></li>
+        </ul>
     </div>
     <div id="debug-info"></div>
 
@@ -94,16 +133,8 @@
         const timerSelect = document.getElementById('timer-select');
         const timerDisplay = document.getElementById('timer');
         const debugInfo = document.getElementById('debug-info');
-        let currentPage = 0;
         let timer = 240;
         let countdown;
-
-        function loadNextPage() {
-            currentPage = (currentPage % 5) + 1;
-            const nextPageUrl = `${currentPage}.html`;
-            galleryFrame.src = nextPageUrl;
-            startTimer();
-        }
 
         function startTimer() {
             let timeLeft = timer;
@@ -114,7 +145,8 @@
                 timeLeft--;
                 timerDisplay.textContent = timeLeft;
                 if (timeLeft <= 0) {
-                    loadNextPage();
+                    clearInterval(countdown);
+                    alert("Time's up!");
                 }
             }, 1000);
         }
@@ -141,8 +173,9 @@
             startTimer();
         });
 
-        // Start the gallery
-        loadNextPage();
+        // Start the gallery with the first page
+        galleryFrame.src = '1.html';
+        startTimer();
     </script>
 </body>
 </html>
