@@ -43,23 +43,6 @@
             height: 100%;
             border: none;
         }
-        #controls {
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        select {
-            font-size: 1em;
-            padding: 5px;
-            border-radius: 5px;
-            border: 2px solid #4caf50;
-        }
-        #timer {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #4caf50;
-        }
         #debug-info {
             margin-top: 20px;
             padding: 10px;
@@ -102,16 +85,6 @@
     <div id="gallery-container">
         <iframe id="gallery-frame"></iframe>
     </div>
-    <div id="controls">
-        <label for="timer-select">Change timer:</label>
-        <select id="timer-select">
-            <option value="30">15 seconds</option>
-            <option value="60">1 minute </option>
-            <option value="120">2 minutes</option>
-            <option value="240"4 selected>4 minutes</option> <!-- Default timer -->
-        </select>
-        <span id="timer">240</span>
-    </div>
     <div id="links-container">
         <ul>
             <li><a href="1.html" target="gallery-frame">Page 1</a></li>
@@ -130,26 +103,7 @@
 
     <script>
         const galleryFrame = document.getElementById('gallery-frame');
-        const timerSelect = document.getElementById('timer-select');
-        const timerDisplay = document.getElementById('timer');
         const debugInfo = document.getElementById('debug-info');
-        let timer = 240;
-        let countdown;
-
-        function startTimer() {
-            let timeLeft = timer;
-            timerDisplay.textContent = timeLeft;
-
-            clearInterval(countdown);
-            countdown = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    alert("Time's up!");
-                }
-            }, 1000);
-        }
 
         galleryFrame.addEventListener('load', () => {
             debugInfo.style.display = 'none';
@@ -168,14 +122,8 @@
             debugInfo.style.display = 'block';
         });
 
-        timerSelect.addEventListener('change', (e) => {
-            timer = parseInt(e.target.value);
-            startTimer();
-        });
-
         // Start the gallery with the first page
         galleryFrame.src = '1.html';
-        startTimer();
     </script>
 </body>
 </html>
