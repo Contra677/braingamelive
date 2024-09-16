@@ -97,24 +97,6 @@ button:hover {
     border-radius: 5px;
     border: 1px solid #bdc3c7;
 }
-
-#scoreboard {
-    margin-top: 20px;
-    text-align: center;
-}
-
-#scoreboard h2 {
-    margin-bottom: 10px;
-}
-
-#scoreboard ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-#scoreboard li {
-    margin-bottom: 5px;
-}
 </style>
 </head>
 <body>
@@ -134,10 +116,6 @@ button:hover {
         </select>
     </div>
     <div id="game-board"></div>
-    <div id="scoreboard">
-        <h2>Best Times</h2>
-        <ul id="best-times"></ul>
-    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
@@ -148,7 +126,6 @@ const hintButton = document.getElementById('hint-button');
 const levelSelect = document.getElementById('level-select');
 const timerDisplay = document.getElementById('timer');
 const attemptsDisplay = document.getElementById('attempts');
-const bestTimesList = document.getElementById('best-times');
 
 let tiles = [];
 let flippedTiles = [];
@@ -257,27 +234,6 @@ function endGame() {
     gameStarted = false;
     sounds.complete.play();
     alert(`Congratulations! You completed the game in ${timer} seconds with ${attempts} attempts.`);
-    updateScoreboard();
-}
-
-function updateScoreboard() {
-    const bestTimes = JSON.parse(localStorage.getItem('bestTimes')) || [];
-    bestTimes.push({ time: timer, attempts });
-    bestTimes.sort((a, b) => a.time - b.time);
-    bestTimes.splice(5); // Keep only top 5 scores
-    localStorage.setItem('bestTimes', JSON.stringify(bestTimes));
-
-    displayScoreboard();
-}
-
-function displayScoreboard() {
-    const bestTimes = JSON.parse(localStorage.getItem('bestTimes')) || [];
-    bestTimesList.innerHTML = '';
-    bestTimes.forEach((score, index) => {
-        const li = document.createElement('li');
-        li.textContent = `${index + 1}. Time: ${score.time}s, Attempts: ${score.attempts}`;
-        bestTimesList.appendChild(li);
-    });
 }
 
 function showHint() {
@@ -303,7 +259,6 @@ levelSelect.addEventListener('change', () => {
     gameBoard.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 });
 
-displayScoreboard();
 createTiles(); // Create tiles immediately so they're visible
 </script>
 </body>
