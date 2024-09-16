@@ -1,147 +1,194 @@
-<html><head><base href="https://websim.engine/ascending-memory-game/">
-<title>Ascending Memory Challenge Game</title>
-<style>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>US States Game with Hint Button</title>
+  <style>
     body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
     }
-    #game-container {
-        text-align: center;
-        background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        width: 80%;
-        max-width: 500px;
+    #map-container {
+      width: 800px;
+      height: 500px;
+      position: relative;
     }
-    #number-display {
-        font-size: 48px;
-        margin: 20px 0;
-        height: 60px;
-    }
-    #input-field {
-        font-size: 24px;
-        padding: 5px;
-        width: 80%;
-        margin-bottom: 10px;
-    }
-    button {
-        font-size: 18px;
-        padding: 10px 20px;
-        margin: 5px;
-        cursor: pointer;
+    #state-name {
+      font-size: 24px;
+      margin-bottom: 20px;
     }
     #message {
-        margin-top: 20px;
-        font-size: 18px;
-        min-height: 54px;
+      font-size: 18px;
+      margin-top: 20px;
+      height: 48px;
+      text-align: center;
     }
-    #level {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 10px;
+    .state {
+      transition: fill 0.3s;
     }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    .state:hover {
+      fill: #aad4ff !important;
+    }
+    .state.clicked {
+      animation: flash 0.5s;
+    }
+    @keyframes flash {
+      0%, 50%, 100% { fill: #ddd; }
+      25%, 75% { fill: #ff9999; }
+    }
+    .state.hint {
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { fill: #ddd; }
+      50% { fill: #ffff99; }
+    }
+    #hint-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #hint-button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-<div id="game-container">
-    <div id="level">Level: 1</div>
-    <div id="number-display"></div>
-    <input type="text" id="input-field" placeholder="Enter the numbers in ascending order" disabled>
-    <br>
-    <button id="submit-btn" disabled>Submit</button>
-    <button id="reset-btn">Reset</button>
-    <div id="message"></div>
-</div>
+  <div id="state-name"></div>
+  <div id="map-container"></div>
+  <div id="message"></div>
+  <button id="hint-button">Hint</button>
 
-<script>
-let currentLevel = 1;
-let currentNumber = '';
-let displayTime = 3000;
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/topojson.v3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script>
+    const width = 800;
+    const height = 500;
+    const svg = d3.select("#map-container")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
 
-function generateNumber(digits) {
-    let num = '';
-    for (let i = 0; i < digits; i++) {
-        num += Math.floor(Math.random() * 10);
-    }
-    return num;
-}
+    const projection = d3.geoAlbersUsa()
+      .translate([width / 2, height / 2])
+      .scale(1000);
 
-function showNumber() {
-    const numberDisplay = document.getElementById('number-display');
-    const inputField = document.getElementById('input-field');
-    const submitBtn = document.getElementById('submit-btn');
-    
-    numberDisplay.textContent = currentNumber;
-    inputField.disabled = true;
-    submitBtn.disabled = true;
-    
-    setTimeout(() => {
-        numberDisplay.textContent = '';
-        inputField.disabled = false;
-        submitBtn.disabled = false;
-        inputField.focus();
-    }, displayTime);
-}
+    const path = d3.geoPath().projection(projection);
 
-function checkAnswer() {
-    const inputField = document.getElementById('input-field');
-    const message = document.getElementById('message');
-    const userInput = inputField.value.replace(/\s+/g, '');
-    
-    const correctAnswer = currentNumber.split('').sort((a, b) => a - b).join('');
-    
-    if (userInput === correctAnswer) {
-        message.innerHTML = 'Correct! Moving to next level.<br>Remember to enter the digits in ascending order!';
-        message.style.color = 'green';
+    const stateNameElement = document.getElementById("state-name");
+    const messageElement = document.getElementById("message");
+    const hintButton = document.getElementById("hint-button");
+
+    let states;
+    let currentState;
+    let remainingStates;
+
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then((us) => {
+      states = topojson.feature(us, us.objects.states).features;
+      remainingStates = states.filter(d => !["Puerto Rico", "Guam", "American Samoa", "Northern Mariana Islands", "U.S. Virgin Islands"].includes(d.properties.name));
+
+      svg.append("g")
+        .selectAll("path")
+        .data(remainingStates)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("fill", "#ddd")
+        .attr("stroke", "#fff")
+        .attr("class", "state")
+        .on("click", handleStateClick);
+
+      nextState();
+    });
+
+    function handleStateClick(event, d) {
+      d3.select(event.currentTarget).classed("clicked", true);
+      setTimeout(() => {
+        d3.select(event.currentTarget).classed("clicked", false);
+      }, 500);
+
+      if (d.properties.name === currentState.properties.name) {
+        messageElement.innerHTML = "Correct! Well done!";
+        messageElement.style.color = "green";
         confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
         });
-        currentLevel++;
-        displayTime += 250;
-        document.getElementById('level').textContent = `Level: ${currentLevel}`;
-        startNewRound();
-    } else {
-        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Try again with the same number.`;
-        message.style.color = 'red';
+        setTimeout(() => {
+          messageElement.innerHTML = "";
+          nextState();
+        }, 1500);
+      } else {
+        messageElement.innerHTML = `Wrong! You selected ${d.properties.name}.<br>Try again.`;
+        messageElement.style.color = "red";
+      }
+
+      showStateName(d);
     }
-    
-    inputField.value = '';
-}
 
-function startNewRound() {
-    currentNumber = generateNumber(currentLevel);
-    const message = document.getElementById('message');
-    message.innerHTML = 'Remember the number!<br>Enter the digits in ascending order.';
-    message.style.color = 'black';
-    showNumber();
-}
-
-function resetGame() {
-    currentLevel = 1;
-    displayTime = 3000;
-    document.getElementById('level').textContent = 'Level: 1';
-    document.getElementById('message').textContent = '';
-    startNewRound();
-}
-
-document.getElementById('submit-btn').addEventListener('click', checkAnswer);
-document.getElementById('reset-btn').addEventListener('click', resetGame);
-document.getElementById('input-field').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        checkAnswer();
+    function showStateName(d) {
+      const centroid = path.centroid(d);
+      svg.append("text")
+        .attr("x", centroid[0])
+        .attr("y", centroid[1])
+        .attr("dy", ".35em")
+        .attr("class", "state-label")
+        .attr("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("fill", "black")
+        .text(d.properties.name)
+        .transition()
+        .duration(2000)
+        .style("opacity", 0)
+        .on("end", function() { d3.select(this).remove(); });
     }
-});
 
-startNewRound();
-</script>
+    function nextState() {
+      if (remainingStates.length === 0) {
+        stateNameElement.textContent = "Congratulations! You've completed all states!";
+        hintButton.style.display = "none";
+        return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * remainingStates.length);
+      currentState = remainingStates[randomIndex];
+      remainingStates.splice(randomIndex, 1);
+
+      stateNameElement.textContent = `Find: ${currentState.properties.name}`;
+      clearHint();
+    }
+
+    function clearHint() {
+      svg.selectAll(".state").classed("hint", false);
+    }
+
+    function showHint() {
+      clearHint();
+      svg.selectAll(".state")
+        .filter(d => d.properties.name === currentState.properties.name)
+        .classed("hint", true);
+
+      setTimeout(clearHint, 3000);
+    }
+
+    hintButton.addEventListener("click", showHint);
+  </script>
 </body>
 </html>
