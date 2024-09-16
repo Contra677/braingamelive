@@ -1,0 +1,147 @@
+<html><head><base href="https://websim.engine/ascending-memory-game/">
+<title>Ascending Memory Challenge Game</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+    }
+    #game-container {
+        text-align: center;
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 80%;
+        max-width: 500px;
+    }
+    #number-display {
+        font-size: 48px;
+        margin: 20px 0;
+        height: 60px;
+    }
+    #input-field {
+        font-size: 24px;
+        padding: 5px;
+        width: 80%;
+        margin-bottom: 10px;
+    }
+    button {
+        font-size: 18px;
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+    }
+    #message {
+        margin-top: 20px;
+        font-size: 18px;
+        min-height: 54px;
+    }
+    #level {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<div id="game-container">
+    <div id="level">Level: 1</div>
+    <div id="number-display"></div>
+    <input type="text" id="input-field" placeholder="Enter the numbers in ascending order" disabled>
+    <br>
+    <button id="submit-btn" disabled>Submit</button>
+    <button id="reset-btn">Reset</button>
+    <div id="message"></div>
+</div>
+
+<script>
+let currentLevel = 1;
+let currentNumber = '';
+let displayTime = 3000;
+
+function generateNumber(digits) {
+    let num = '';
+    for (let i = 0; i < digits; i++) {
+        num += Math.floor(Math.random() * 10);
+    }
+    return num;
+}
+
+function showNumber() {
+    const numberDisplay = document.getElementById('number-display');
+    const inputField = document.getElementById('input-field');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    numberDisplay.textContent = currentNumber;
+    inputField.disabled = true;
+    submitBtn.disabled = true;
+    
+    setTimeout(() => {
+        numberDisplay.textContent = '';
+        inputField.disabled = false;
+        submitBtn.disabled = false;
+        inputField.focus();
+    }, displayTime);
+}
+
+function checkAnswer() {
+    const inputField = document.getElementById('input-field');
+    const message = document.getElementById('message');
+    const userInput = inputField.value.replace(/\s+/g, '');
+    
+    const correctAnswer = currentNumber.split('').sort((a, b) => a - b).join('');
+    
+    if (userInput === correctAnswer) {
+        message.innerHTML = 'Correct! Moving to next level.<br>Remember to enter the digits in ascending order!';
+        message.style.color = 'green';
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+        currentLevel++;
+        displayTime += 250;
+        document.getElementById('level').textContent = `Level: ${currentLevel}`;
+        startNewRound();
+    } else {
+        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Try again with the same number.`;
+        message.style.color = 'red';
+    }
+    
+    inputField.value = '';
+}
+
+function startNewRound() {
+    currentNumber = generateNumber(currentLevel);
+    const message = document.getElementById('message');
+    message.innerHTML = 'Remember the number!<br>Enter the digits in ascending order.';
+    message.style.color = 'black';
+    showNumber();
+}
+
+function resetGame() {
+    currentLevel = 1;
+    displayTime = 3000;
+    document.getElementById('level').textContent = 'Level: 1';
+    document.getElementById('message').textContent = '';
+    startNewRound();
+}
+
+document.getElementById('submit-btn').addEventListener('click', checkAnswer);
+document.getElementById('reset-btn').addEventListener('click', resetGame);
+document.getElementById('input-field').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        checkAnswer();
+    }
+});
+
+startNewRound();
+</script>
+</body>
+</html>

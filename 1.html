@@ -1,0 +1,269 @@
+<html><head><base href="https://websim.creationengine.ai/step-by-step-math-trainer/">
+  <title>Step-by-Step Math Trainer</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f8ff;
+    }
+    #container {
+      background-color: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    #equation, #steps {
+      font-size: 48px;
+      text-align: right;
+      margin-bottom: 20px;
+      font-family: 'Courier New', monospace;
+    }
+    .highlight {
+      background-color: #FFFF00;
+      transition: background-color 0.5s ease;
+    }
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    button {
+      font-size: 24px;
+      padding: 15px 30px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #feedback {
+      font-size: 24px;
+      margin-top: 20px;
+      text-align: center;
+      min-height: 30px;
+    }
+    #carryDisplay {
+      position: absolute;
+      font-size: 36px;
+      color: #FF0000;
+      font-weight: bold;
+      transition: all 0.5s ease;
+      opacity: 0; /* Initially hidden */
+    }
+    #debugOutput {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #333;
+      background-color: #e6e6e6;
+      padding: 10px;
+      border-radius: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="equation"></div>
+    <div id="steps"></div>
+    <div id="controls">
+      <button id="prevStep">Previous Step</button>
+      <button id="nextStep">Next Step</button>
+    </div>
+    <div id="feedback"></div>
+    <div id="debugOutput"></div>
+    <div id="carryDisplay"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+  <script>
+    const equation = document.getElementById('equation');
+    const steps = document.getElementById('steps');
+    const prevStepBtn = document.getElementById('prevStep');
+    const nextStepBtn = document.getElementById('nextStep');
+    const feedback = document.getElementById('feedback');
+    const carryDisplay = document.getElementById('carryDisplay');
+    const debugOutput = document.getElementById('debugOutput');
+
+    let num1, num2, sum, currentStep = 0;
+    let carry = [0, 0, 0];
+
+    const sounds = {
+      add: new Howl({ src: ['https://websim.creationengine.ai/step-by-step-math-trainer/add.mp3'] }),
+      carry: new Howl({ src: ['https://websim.creationengine.ai/step-by-step-math-trainer/carry.mp3'] }),
+      complete: new Howl({ src: ['https://websim.creationengine.ai/step-by-step-math-trainer/complete.mp3'] }),
+    };
+
+    function logDebug(message) {
+      const time = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${time}] ${message}<br>`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+    }
+
+    function generateProblem() {
+      try {
+        num1 = Math.floor(Math.random() * 900) + 100;
+        num2 = Math.floor(Math.random() * 900) + 100;
+        sum = num1 + num2;
+        currentStep = 0;
+        carry = [0, 0, 0];
+        carryDisplay.innerHTML = '';
+        carryDisplay.style.opacity = '0';
+        logDebug(`Generated problem: ${num1} + ${num2} = ${sum}`);
+        updateDisplay();
+      } catch (error) {
+        logDebug(`Error in generateProblem: ${error.message}`);
+      }
+    }
+
+    function updateDisplay() {
+      try {
+        equation.innerHTML = `${formatNumber(num1)}<br>+ ${formatNumber(num2)}<br>`;
+        steps.innerHTML = '';
+        feedback.textContent = '';
+
+        let result = '';
+        let tempCarry = 0;
+        for (let i = 0; i < currentStep; i++) {
+          const digit1 = getDigit(num1, i);
+          const digit2 = getDigit(num2, i);
+          const digitSum = digit1 + digit2 + carry[i];
+          result = (digitSum % 10) + result;
+          tempCarry = digitSum > 9 ? 1 : 0;
+          carry[i + 1] = tempCarry;
+        }
+        steps.innerHTML = '-'.repeat(Math.max(num1.toString().length, num2.toString().length)) + '<br>' + formatNumber(parseInt(result) || 0);
+
+        highlightCurrentStep();
+
+        if (currentStep > 0 && currentStep < 4) {
+          const digit1 = getDigit(num1, currentStep - 1);
+          const digit2 = getDigit(num2, currentStep - 1);
+          feedback.textContent = `${digit1} + ${digit2} ${carry[currentStep - 1] ? '+ 1 (carry)' : ''} = ${digit1 + digit2 + carry[currentStep - 1]}`;
+          logDebug(`Step ${currentStep}: ${digit1} + ${digit2} ${carry[currentStep - 1] ? '+ 1 (carry)' : ''} = ${digit1 + digit2 + carry[currentStep - 1]}`);
+        }
+
+        if (currentStep === 4) {
+          feedback.textContent = 'Addition complete!';
+          sounds.complete.play();
+          logDebug('Addition complete.');
+        }
+
+        // Always show carry when it's in use, hide otherwise
+        if (currentStep > 0 && currentStep < 4) {
+          const digit1 = getDigit(num1, currentStep - 1);
+          const digit2 = getDigit(num2, currentStep - 1);
+          const prevCarry = currentStep > 1 ? carry[currentStep - 2] : 0;
+          const digitSum = digit1 + digit2 + prevCarry;
+          if (digitSum > 9) {
+            animateCarry(currentStep - 1);
+          } else {
+            carryDisplay.style.opacity = '0'; // Hide carry number if not used
+          }
+        } else {
+          carryDisplay.style.opacity = '0'; // Hide carry number if not in use
+        }
+
+        // Display final answer after addition is complete
+        if (currentStep === 4) {
+          feedback.textContent = `Final answer: ${sum}`;
+        }
+      } catch (error) {
+        logDebug(`Error in updateDisplay: ${error.message}`);
+      }
+    }
+
+    function highlightCurrentStep() {
+      try {
+        const equationLines = equation.innerHTML.split('<br>');
+        if (currentStep > 0 && currentStep < 4) {
+          const position = currentStep - 1;
+          equationLines[0] = highlightDigit(equationLines[0], position);
+          equationLines[1] = highlightDigit(equationLines[1], position);
+          if (steps.innerHTML) {
+            const stepsLines = steps.innerHTML.split('<br>');
+            stepsLines[1] = highlightDigit(stepsLines[1], position);
+            steps.innerHTML = stepsLines.join('<br>');
+          }
+        }
+        equation.innerHTML = equationLines.join('<br>');
+      } catch (error) {
+        logDebug(`Error in highlightCurrentStep: ${error.message}`);
+      }
+    }
+
+    function highlightDigit(line, position) {
+      const digits = line.split('');
+      const index = digits.length - 1 - position;
+      if (index >= 0) {
+        digits[index] = `<span class="highlight">${digits[index]}</span>`;
+      }
+      return digits.join('');
+    }
+
+    function getDigit(number, position) {
+      return Math.floor((number / Math.pow(10, position)) % 10);
+    }
+
+    function formatNumber(num) {
+      return num.toString().padStart(3, ' ');
+    }
+
+    function animateCarry(fromColumn) {
+      try {
+        carryDisplay.textContent = '1'; // Always display '1' as the carry
+        const rect = document.getElementById('steps').getBoundingClientRect();
+        const startX = rect.right - (fromColumn + 2) * 30;
+        const startY = rect.top - 40;
+
+        carryDisplay.style.left = `${startX}px`;
+        carryDisplay.style.top = `${startY}px`;
+        carryDisplay.style.opacity = '1';
+
+        logDebug(`Animating carry from column ${fromColumn}`);
+        sounds.carry.play();
+      } catch (error) {
+        logDebug(`Error in animateCarry: ${error.message}`);
+      }
+    }
+
+    prevStepBtn.addEventListener('click', () => {
+      try {
+        if (currentStep > 0) {
+          currentStep--;
+          updateDisplay();
+        }
+      } catch (error) {
+        logDebug(`Error in prevStepBtn click handler: ${error.message}`);
+      }
+    });
+
+    nextStepBtn.addEventListener('click', () => {
+      try {
+        if (currentStep < 4) {
+          currentStep++;
+          updateDisplay();
+          if (currentStep < 4) {
+            sounds.add.play();
+          }
+        } else {
+          generateProblem();
+        }
+      } catch (error) {
+        logDebug(`Error in nextStepBtn click handler: ${error.message}`);
+      }
+    });
+
+    generateProblem();
+  </script>
+</body></html>
