@@ -64,6 +64,7 @@
 let currentLevel = 1;
 let currentNumber = '';
 let displayTime = 3000;
+let correctStreak = 0;
 
 function generateNumber(digits) {
     let num = '';
@@ -98,23 +99,31 @@ function checkAnswer() {
     const correctAnswer = currentNumber.split('').sort((a, b) => a - b).join('');
     
     if (userInput === correctAnswer) {
-        message.innerHTML = 'Correct! Moving to next level.<br>Remember to enter the digits in ascending order!';
+        message.innerHTML = 'Correct! Moving to the next level.<br>Remember to enter the digits in ascending order!';
         message.style.color = 'green';
         confetti({
             particleCount: 100,
             spread: 70,
             origin: { y: 0.6 }
         });
-        currentLevel++;
-        displayTime += 250;
-        document.getElementById('level').textContent = `Level: ${currentLevel}`;
-        startNewRound();
+        correctStreak++;
+        if (correctStreak % 3 === 0) {
+            currentLevel++;
+            displayTime += 250;
+        }
     } else {
-        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Try again with the same number.`;
+        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Moving to the next number.`;
         message.style.color = 'red';
+        correctStreak = 0;
+        if (currentLevel > 1) {
+            currentLevel--;
+            displayTime = Math.max(displayTime - 250, 3000);
+        }
     }
     
+    document.getElementById('level').textContent = `Level: ${currentLevel}`;
     inputField.value = '';
+    startNewRound();
 }
 
 function startNewRound() {
@@ -128,6 +137,7 @@ function startNewRound() {
 function resetGame() {
     currentLevel = 1;
     displayTime = 3000;
+    correctStreak = 0;
     document.getElementById('level').textContent = 'Level: 1';
     document.getElementById('message').textContent = '';
     startNewRound();
