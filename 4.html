@@ -1,60 +1,81 @@
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<base href="https://websim.engine/memory-game/">
-<title>Number Memory Challenge</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f0f0;
-    }
-    #game-container {
-        text-align: center;
-        background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        max-width: 400px;
-        width: 100%;
-    }
-    #number-display {
-        font-size: 48px;
-        margin: 20px 0;
-        min-height: 60px;
-    }
-    #input-form {
-        margin: 20px 0;
-    }
-    #user-input {
-        font-size: 18px;
-        padding: 5px;
-        width: 100px;
-    }
-    button {
-        font-size: 18px;
-        padding: 5px 15px;
-        margin: 0 5px;
-        cursor: pointer;
-    }
-    #message {
-        margin: 20px 0;
-        font-weight: bold;
-    }
-    #level {
-        font-size: 24px;
-        margin-top: 20px;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Memory Challenge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        #number-display {
+            font-size: 48px;
+            margin: 20px 0;
+            min-height: 60px;
+        }
+        #input-form {
+            margin: 20px 0;
+        }
+        #user-input {
+            font-size: 18px;
+            padding: 5px;
+            width: 100px;
+        }
+        button {
+            font-size: 18px;
+            padding: 5px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        #message {
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        #level {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        #progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+            height: 20px;
+            position: relative;
+        }
+        #progress-bar {
+            height: 100%;
+            background-color: #4caf50;
+            width: 0%;
+            border-radius: 5px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
 </head>
 <body>
 <div id="game-container">
     <h1>Number Memory Challenge</h1>
     <div id="number-display"></div>
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
     <form id="input-form" method="GET" action="https://websim.engine/memory-game/guess">
         <input type="number" id="user-input" name="guess" required>
         <button type="submit">Submit</button>
@@ -62,75 +83,4 @@
     <button id="reset-btn">Reset</button>
     <div id="message"></div>
     <div id="level">Level: 1</div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-<script>
-    let currentLevel = 1;
-    let currentNumber = '';
-    let baseDisplayTime = 3000;
-    let correctStreak = 0;
-
-    function generateNumber(digits) {
-        return Array.from({length: digits}, () => Math.floor(Math.random() * 10)).join('');
-    }
-
-    function displayNumber() {
-        currentNumber = generateNumber(currentLevel);
-        document.getElementById('number-display').textContent = currentNumber;
-        document.getElementById('input-form').style.display = 'none';
-        setTimeout(() => {
-            document.getElementById('number-display').textContent = '';
-            document.getElementById('input-form').style.display = 'block';
-        }, baseDisplayTime + (currentLevel - 1) * 250);
-    }
-
-    function startGame() {
-        displayNumber();
-        document.getElementById('user-input').value = '';
-        document.getElementById('message').textContent = '';
-    }
-
-    function showConfetti() {
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
-    }
-
-    document.getElementById('input-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const userGuess = document.getElementById('user-input').value;
-        if (userGuess === currentNumber) {
-            document.getElementById('message').textContent = 'Correct! Moving to next level.';
-            correctStreak++;
-            if (correctStreak === 3) {
-                currentLevel++;
-                correctStreak = 0;
-            }
-            document.getElementById('level').textContent = `Level: ${currentLevel}`;
-            showConfetti();
-            setTimeout(startGame, 2000);
-        } else {
-            document.getElementById('message').textContent = `Wrong! The number was ${currentNumber}. Try again.`;
-            correctStreak = 0;
-            if (currentLevel > 1) {
-                currentLevel--;
-            }
-            document.getElementById('level').textContent = `Level: ${currentLevel}`;
-            setTimeout(startGame, 2000);
-        }
-    });
-
-    document.getElementById('reset-btn').addEventListener('click', function() {
-        currentLevel = 1;
-        correctStreak = 0;
-        document.getElementById('level').textContent = 'Level: 1';
-        startGame();
-    });
-
-    startGame();
-</script>
-</body>
-</html>
+</
