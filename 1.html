@@ -1,4 +1,6 @@
-<html><head><base href="https://websim.creationengine.ai/step-by-step-math-trainer/">
+<html>
+<head>
+  <base href="https://websim.creationengine.ai/step-by-step-math-trainer/">
   <title>Step-by-Step Math Trainer</title>
   <style>
     body {
@@ -59,17 +61,6 @@
       transition: all 0.5s ease;
       opacity: 0; /* Initially hidden */
     }
-    #debugOutput {
-      margin-top: 20px;
-      font-size: 16px;
-      color: #333;
-      background-color: #e6e6e6;
-      padding: 10px;
-      border-radius: 10px;
-      max-height: 150px;
-      overflow-y: auto;
-      font-family: 'Courier New', monospace;
-    }
   </style>
 </head>
 <body>
@@ -81,7 +72,6 @@
       <button id="nextStep">Next Step</button>
     </div>
     <div id="feedback"></div>
-    <div id="debugOutput"></div>
     <div id="carryDisplay"></div>
   </div>
 
@@ -93,7 +83,6 @@
     const nextStepBtn = document.getElementById('nextStep');
     const feedback = document.getElementById('feedback');
     const carryDisplay = document.getElementById('carryDisplay');
-    const debugOutput = document.getElementById('debugOutput');
 
     let num1, num2, sum, currentStep = 0;
     let carry = [0, 0, 0];
@@ -104,102 +93,79 @@
       complete: new Howl({ src: ['https://websim.creationengine.ai/step-by-step-math-trainer/complete.mp3'] }),
     };
 
-    function logDebug(message) {
-      const time = new Date().toLocaleTimeString();
-      debugOutput.innerHTML += `[${time}] ${message}<br>`;
-      debugOutput.scrollTop = debugOutput.scrollHeight;
-    }
-
     function generateProblem() {
-      try {
-        num1 = Math.floor(Math.random() * 900) + 100;
-        num2 = Math.floor(Math.random() * 900) + 100;
-        sum = num1 + num2;
-        currentStep = 0;
-        carry = [0, 0, 0];
-        carryDisplay.innerHTML = '';
-        carryDisplay.style.opacity = '0';
-        logDebug(`Generated problem: ${num1} + ${num2} = ${sum}`);
-        updateDisplay();
-      } catch (error) {
-        logDebug(`Error in generateProblem: ${error.message}`);
-      }
+      num1 = Math.floor(Math.random() * 900) + 100;
+      num2 = Math.floor(Math.random() * 900) + 100;
+      sum = num1 + num2;
+      currentStep = 0;
+      carry = [0, 0, 0];
+      carryDisplay.innerHTML = '';
+      carryDisplay.style.opacity = '0';
+      updateDisplay();
     }
 
     function updateDisplay() {
-      try {
-        equation.innerHTML = `${formatNumber(num1)}<br>+ ${formatNumber(num2)}<br>`;
-        steps.innerHTML = '';
-        feedback.textContent = '';
+      equation.innerHTML = `${formatNumber(num1)}<br>+ ${formatNumber(num2)}<br>`;
+      steps.innerHTML = '';
+      feedback.textContent = '';
 
-        let result = '';
-        let tempCarry = 0;
-        for (let i = 0; i < currentStep; i++) {
-          const digit1 = getDigit(num1, i);
-          const digit2 = getDigit(num2, i);
-          const digitSum = digit1 + digit2 + carry[i];
-          result = (digitSum % 10) + result;
-          tempCarry = digitSum > 9 ? 1 : 0;
-          carry[i + 1] = tempCarry;
-        }
-        steps.innerHTML = '-'.repeat(Math.max(num1.toString().length, num2.toString().length)) + '<br>' + formatNumber(parseInt(result) || 0);
+      let result = '';
+      let tempCarry = 0;
+      for (let i = 0; i < currentStep; i++) {
+        const digit1 = getDigit(num1, i);
+        const digit2 = getDigit(num2, i);
+        const digitSum = digit1 + digit2 + carry[i];
+        result = (digitSum % 10) + result;
+        tempCarry = digitSum > 9 ? 1 : 0;
+        carry[i + 1] = tempCarry;
+      }
+      steps.innerHTML = '-'.repeat(Math.max(num1.toString().length, num2.toString().length)) + '<br>' + formatNumber(parseInt(result) || 0);
 
-        highlightCurrentStep();
+      highlightCurrentStep();
 
-        if (currentStep > 0 && currentStep < 4) {
-          const digit1 = getDigit(num1, currentStep - 1);
-          const digit2 = getDigit(num2, currentStep - 1);
-          feedback.textContent = `${digit1} + ${digit2} ${carry[currentStep - 1] ? '+ 1 (carry)' : ''} = ${digit1 + digit2 + carry[currentStep - 1]}`;
-          logDebug(`Step ${currentStep}: ${digit1} + ${digit2} ${carry[currentStep - 1] ? '+ 1 (carry)' : ''} = ${digit1 + digit2 + carry[currentStep - 1]}`);
-        }
+      if (currentStep > 0 && currentStep < 4) {
+        const digit1 = getDigit(num1, currentStep - 1);
+        const digit2 = getDigit(num2, currentStep - 1);
+        feedback.textContent = `${digit1} + ${digit2} ${carry[currentStep - 1] ? '+ 1 (carry)' : ''} = ${digit1 + digit2 + carry[currentStep - 1]}`;
+      }
 
-        if (currentStep === 4) {
-          feedback.textContent = 'Addition complete!';
-          sounds.complete.play();
-          logDebug('Addition complete.');
-        }
+      if (currentStep === 4) {
+        feedback.textContent = 'Addition complete!';
+        sounds.complete.play();
+      }
 
-        // Always show carry when it's in use, hide otherwise
-        if (currentStep > 0 && currentStep < 4) {
-          const digit1 = getDigit(num1, currentStep - 1);
-          const digit2 = getDigit(num2, currentStep - 1);
-          const prevCarry = currentStep > 1 ? carry[currentStep - 2] : 0;
-          const digitSum = digit1 + digit2 + prevCarry;
-          if (digitSum > 9) {
-            animateCarry(currentStep - 1);
-          } else {
-            carryDisplay.style.opacity = '0'; // Hide carry number if not used
-          }
+      if (currentStep > 0 && currentStep < 4) {
+        const digit1 = getDigit(num1, currentStep - 1);
+        const digit2 = getDigit(num2, currentStep - 1);
+        const prevCarry = currentStep > 1 ? carry[currentStep - 2] : 0;
+        const digitSum = digit1 + digit2 + prevCarry;
+        if (digitSum > 9) {
+          animateCarry(currentStep - 1);
         } else {
-          carryDisplay.style.opacity = '0'; // Hide carry number if not in use
+          carryDisplay.style.opacity = '0'; 
         }
+      } else {
+        carryDisplay.style.opacity = '0'; 
+      }
 
-        // Display final answer after addition is complete
-        if (currentStep === 4) {
-          feedback.textContent = `Final answer: ${sum}`;
-        }
-      } catch (error) {
-        logDebug(`Error in updateDisplay: ${error.message}`);
+      if (currentStep === 4) {
+        feedback.textContent = `Final answer: ${sum}`;
       }
     }
 
     function highlightCurrentStep() {
-      try {
-        const equationLines = equation.innerHTML.split('<br>');
-        if (currentStep > 0 && currentStep < 4) {
-          const position = currentStep - 1;
-          equationLines[0] = highlightDigit(equationLines[0], position);
-          equationLines[1] = highlightDigit(equationLines[1], position);
-          if (steps.innerHTML) {
-            const stepsLines = steps.innerHTML.split('<br>');
-            stepsLines[1] = highlightDigit(stepsLines[1], position);
-            steps.innerHTML = stepsLines.join('<br>');
-          }
+      const equationLines = equation.innerHTML.split('<br>');
+      if (currentStep > 0 && currentStep < 4) {
+        const position = currentStep - 1;
+        equationLines[0] = highlightDigit(equationLines[0], position);
+        equationLines[1] = highlightDigit(equationLines[1], position);
+        if (steps.innerHTML) {
+          const stepsLines = steps.innerHTML.split('<br>');
+          stepsLines[1] = highlightDigit(stepsLines[1], position);
+          steps.innerHTML = stepsLines.join('<br>');
         }
-        equation.innerHTML = equationLines.join('<br>');
-      } catch (error) {
-        logDebug(`Error in highlightCurrentStep: ${error.message}`);
       }
+      equation.innerHTML = equationLines.join('<br>');
     }
 
     function highlightDigit(line, position) {
@@ -220,50 +186,38 @@
     }
 
     function animateCarry(fromColumn) {
-      try {
-        carryDisplay.textContent = '1'; // Always display '1' as the carry
-        const rect = document.getElementById('steps').getBoundingClientRect();
-        const startX = rect.right - (fromColumn + 2) * 30;
-        const startY = rect.top - 40;
+      carryDisplay.textContent = '1'; 
+      const rect = document.getElementById('steps').getBoundingClientRect();
+      const startX = rect.right - (fromColumn + 2) * 30;
+      const startY = rect.top - 40;
 
-        carryDisplay.style.left = `${startX}px`;
-        carryDisplay.style.top = `${startY}px`;
-        carryDisplay.style.opacity = '1';
+      carryDisplay.style.left = `${startX}px`;
+      carryDisplay.style.top = `${startY}px`;
+      carryDisplay.style.opacity = '1';
 
-        logDebug(`Animating carry from column ${fromColumn}`);
-        sounds.carry.play();
-      } catch (error) {
-        logDebug(`Error in animateCarry: ${error.message}`);
-      }
+      sounds.carry.play();
     }
 
     prevStepBtn.addEventListener('click', () => {
-      try {
-        if (currentStep > 0) {
-          currentStep--;
-          updateDisplay();
-        }
-      } catch (error) {
-        logDebug(`Error in prevStepBtn click handler: ${error.message}`);
+      if (currentStep > 0) {
+        currentStep--;
+        updateDisplay();
       }
     });
 
     nextStepBtn.addEventListener('click', () => {
-      try {
+      if (currentStep < 4) {
+        currentStep++;
+        updateDisplay();
         if (currentStep < 4) {
-          currentStep++;
-          updateDisplay();
-          if (currentStep < 4) {
-            sounds.add.play();
-          }
-        } else {
-          generateProblem();
+          sounds.add.play();
         }
-      } catch (error) {
-        logDebug(`Error in nextStepBtn click handler: ${error.message}`);
+      } else {
+        generateProblem();
       }
     });
 
     generateProblem();
   </script>
-</body></html>
+</body>
+</html>
