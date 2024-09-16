@@ -98,6 +98,7 @@ function showNumber() {
     const submitBtn = document.getElementById('submit-btn');
     
     numberDisplay.textContent = currentNumber;
+    inputField.value = ''; // Clear previous input
     inputField.disabled = true;
     submitBtn.disabled = true;
     
