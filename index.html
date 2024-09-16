@@ -80,10 +80,10 @@
     <div id="controls">
         <label for="timer-select">Change timer:</label>
         <select id="timer-select">
-            <option value="3">3 seconds</option>
-            <option value="5" selected>5 seconds</option>
-            <option value="10">10 seconds</option>
-            <option value="60">1 minute</option> <!-- One minute option -->
+            <option value="30">15 seconds</option>
+            <option value="60">1 minute seconds</option>
+            <option value="120">2 minutes</option>
+            <option value="240"4 selected>4 minute</option> <!-- One minute option -->
         </select>
         <span id="timer">5</span>
     </div>
@@ -95,7 +95,7 @@
         const timerDisplay = document.getElementById('timer');
         const debugInfo = document.getElementById('debug-info');
         let currentPage = 0;
-        let timer = 5;
+        let timer = 240;
         let countdown;
 
         function loadNextPage() {
