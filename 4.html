@@ -83,4 +83,96 @@
     <button id="reset-btn">Reset</button>
     <div id="message"></div>
     <div id="level">Level: 1</div>
-</
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+    let currentLevel = 1;
+    let currentNumber = '';
+    const baseDisplayTime = 3000;
+    let correctStreak = 0;
+    let progressInterval;
+    const progressBar = document.getElementById('progress-bar');
+
+    function generateNumber(digits) {
+        return Array.from({length: digits}, () => Math.floor(Math.random() * 10)).join('');
+    }
+
+    function updateProgressBar(duration) {
+        let width = 100;
+        const interval = 100; // update every 100ms
+        const decrement = (interval / duration) * 100;
+        progressBar.style.width = `${width}%`;
+        progressInterval = setInterval(() => {
+            width -= decrement;
+            progressBar.style.width = `${width}%`;
+            if (width <= 0) {
+                clearInterval(progressInterval);
+                document.getElementById('number-display').textContent = '';
+                document.getElementById('input-form').style.display = 'block';
+            }
+        }, interval);
+    }
+
+    function displayNumber() {
+        currentNumber = generateNumber(currentLevel);
+        document.getElementById('number-display').textContent = currentNumber;
+        document.getElementById('input-form').style.display = 'none';
+        const displayTime = baseDisplayTime + (currentLevel - 1) * 250;
+        updateProgressBar(displayTime);
+        setTimeout(() => {
+            clearInterval(progressInterval);
+            document.getElementById('number-display').textContent = '';
+            document.getElementById('input-form').style.display = 'block';
+        }, displayTime);
+    }
+
+    function startGame() {
+        displayNumber();
+        document.getElementById('user-input').value = '';
+        document.getElementById('message').textContent = '';
+    }
+
+    function showConfetti() {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+
+    document.getElementById('input-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const userGuess = document.getElementById('user-input').value;
+        if (userGuess === currentNumber) {
+            document.getElementById('message').textContent = 'Correct! Moving to next level.';
+            correctStreak++;
+            if (correctStreak === 3) {
+                currentLevel++;
+                correctStreak = 0;
+            }
+            document.getElementById('level').textContent = `Level: ${currentLevel}`;
+            showConfetti();
+            setTimeout(startGame, 2000);
+        } else {
+            document.getElementById('message').textContent = `Wrong! The number was ${currentNumber}. Try again.`;
+            correctStreak = 0;
+            if (currentLevel > 1) {
+                currentLevel--;
+            }
+            document.getElementById('level').textContent = `Level: ${currentLevel}`;
+            setTimeout(startGame, 2000);
+        }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', function() {
+        currentLevel = 1;
+        correctStreak = 0;
+        document.getElementById('level').textContent = 'Level: 1';
+        startGame();
+    });
+
+    startGame();
+</script>
+</body>
+</html>
