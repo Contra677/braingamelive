@@ -48,18 +48,18 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
-        #progress-bar-container {
-            margin: 20px 0;
-            width: 100%;
-            background-color: #ddd;
+        #progress-container {
+            margin-top: 20px;
+            height: 10px;
+            background-color: #e0e0e0;
             border-radius: 5px;
             overflow: hidden;
         }
         #progress-bar {
-            height: 10px;
+            height: 100%;
             background-color: #4caf50;
-            width: 100%;
-            transition: width 1s linear;
+            width: 0;
+            transition: width 0.5s;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
@@ -73,7 +73,7 @@
     <button id="submit-btn" disabled>Submit</button>
     <button id="reset-btn">Reset</button>
     <div id="message"></div>
-    <div id="progress-bar-container">
+    <div id="progress-container">
         <div id="progress-bar"></div>
     </div>
 </div>
@@ -82,7 +82,7 @@
 let currentLevel = 1;
 let currentNumber = '';
 let displayTime = 3000;
-let correctStreak = 0;
+let correctAnswersInRow = 0;
 
 function generateNumber(digits) {
     let num = '';
@@ -90,14 +90,6 @@ function generateNumber(digits) {
         num += Math.floor(Math.random() * 10);
     }
     return num;
-}
-
-function updateProgressBar(timeLeft) {
-    const progressBar = document.getElementById('progress-bar');
-    progressBar.style.width = '100%';
-    setTimeout(() => {
-        progressBar.style.width = `${(timeLeft / displayTime) * 100}%`;
-    }, 100);
 }
 
 function showNumber() {
@@ -109,13 +101,12 @@ function showNumber() {
     inputField.disabled = true;
     submitBtn.disabled = true;
     
-    updateProgressBar(displayTime / 1000);
-    
     setTimeout(() => {
         numberDisplay.textContent = '';
         inputField.disabled = false;
         submitBtn.disabled = false;
         inputField.focus();
+        updateProgressBar(displayTime);
     }, displayTime);
 }
 
@@ -127,7 +118,6 @@ function checkAnswer() {
     const correctAnswer = currentNumber.split('').sort((a, b) => a - b).join('');
     
     if (userInput === correctAnswer) {
-        correctStreak++;
         message.innerHTML = 'Correct! Moving to next level.<br>Remember to enter the digits in ascending order!';
         message.style.color = 'green';
         confetti({
@@ -135,33 +125,24 @@ function checkAnswer() {
             spread: 70,
             origin: { y: 0.6 }
         });
-        currentLevel++;
-        displayTime += 250;
-        
-        if (currentLevel % 3 === 0) {
-            displayTime += 1000; // Add 1 extra second for every 3 levels
+        correctAnswersInRow++;
+        if (correctAnswersInRow >= 3) {
+            currentLevel++;
+            displayTime += 1000; // Add one second for every 3 levels
+            correctAnswersInRow = 0;
         }
-        
-        if (correctStreak % 3 === 0) {
-            displayTime += 1000; // Add 1 extra second for every 3 correct answers
-        }
-        
         document.getElementById('level').textContent = `Level: ${currentLevel}`;
         startNewRound();
     } else {
-        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Moving to next number.`;
+        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Moving to the next number.`;
         message.style.color = 'red';
-        setTimeout(() => {
-            startNewRound();
-        }, 2000); // Show the wrong message for 2 seconds before moving to next number
+        currentLevel++;
+        startNewRound();
     }
-    
-    inputField.value = '';
 }
 
 function startNewRound() {
-    const numberLength = Math.max(1, currentLevel - Math.floor(currentLevel / 3));
-    currentNumber = generateNumber(numberLength);
+    currentNumber = generateNumber(currentLevel);
     const message = document.getElementById('message');
     message.innerHTML = 'Remember the number!<br>Enter the digits in ascending order.';
     message.style.color = 'black';
@@ -170,11 +151,17 @@ function startNewRound() {
 
 function resetGame() {
     currentLevel = 1;
-    correctStreak = 0;
     displayTime = 3000;
+    correctAnswersInRow = 0;
     document.getElementById('level').textContent = 'Level: 1';
     document.getElementById('message').textContent = '';
     startNewRound();
+}
+
+function updateProgressBar(time) {
+    const progressBar = document.getElementById('progress-bar');
+    const width = (time / (3000 + (Math.floor((currentLevel - 1) / 3) * 1000))) * 100;
+    progressBar.style.width = `${width}%`;
 }
 
 document.getElementById('submit-btn').addEventListener('click', checkAnswer);
