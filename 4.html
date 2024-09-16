@@ -1,53 +1,68 @@
-<html><head><base href="https://websim.engine/ascending-memory-game/">
-<title>Ascending Memory Challenge Game</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f0f0;
-    }
-    #game-container {
-        text-align: center;
-        background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        width: 80%;
-        max-width: 500px;
-    }
-    #number-display {
-        font-size: 48px;
-        margin: 20px 0;
-        height: 60px;
-    }
-    #input-field {
-        font-size: 24px;
-        padding: 5px;
-        width: 80%;
-        margin-bottom: 10px;
-    }
-    button {
-        font-size: 18px;
-        padding: 10px 20px;
-        margin: 5px;
-        cursor: pointer;
-    }
-    #message {
-        margin-top: 20px;
-        font-size: 18px;
-        min-height: 54px;
-    }
-    #level {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<html>
+<head>
+    <base href="https://websim.engine/ascending-memory-game/">
+    <title>Ascending Memory Challenge Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 80%;
+            max-width: 500px;
+        }
+        #number-display {
+            font-size: 48px;
+            margin: 20px 0;
+            height: 60px;
+        }
+        #input-field {
+            font-size: 24px;
+            padding: 5px;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            min-height: 54px;
+        }
+        #level {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #progress-bar-container {
+            margin: 20px 0;
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #progress-bar {
+            height: 10px;
+            background-color: #4caf50;
+            width: 100%;
+            transition: width 1s linear;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 <div id="game-container">
@@ -58,6 +73,9 @@
     <button id="submit-btn" disabled>Submit</button>
     <button id="reset-btn">Reset</button>
     <div id="message"></div>
+    <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
 </div>
 
 <script>
@@ -74,6 +92,14 @@ function generateNumber(digits) {
     return num;
 }
 
+function updateProgressBar(timeLeft) {
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.style.width = '100%';
+    setTimeout(() => {
+        progressBar.style.width = `${(timeLeft / displayTime) * 100}%`;
+    }, 100);
+}
+
 function showNumber() {
     const numberDisplay = document.getElementById('number-display');
     const inputField = document.getElementById('input-field');
@@ -82,6 +108,8 @@ function showNumber() {
     numberDisplay.textContent = currentNumber;
     inputField.disabled = true;
     submitBtn.disabled = true;
+    
+    updateProgressBar(displayTime / 1000);
     
     setTimeout(() => {
         numberDisplay.textContent = '';
@@ -99,35 +127,41 @@ function checkAnswer() {
     const correctAnswer = currentNumber.split('').sort((a, b) => a - b).join('');
     
     if (userInput === correctAnswer) {
-        message.innerHTML = 'Correct! Moving to the next level.<br>Remember to enter the digits in ascending order!';
+        correctStreak++;
+        message.innerHTML = 'Correct! Moving to next level.<br>Remember to enter the digits in ascending order!';
         message.style.color = 'green';
         confetti({
             particleCount: 100,
             spread: 70,
             origin: { y: 0.6 }
         });
-        correctStreak++;
+        currentLevel++;
+        displayTime += 250;
+        
+        if (currentLevel % 3 === 0) {
+            displayTime += 1000; // Add 1 extra second for every 3 levels
+        }
+        
         if (correctStreak % 3 === 0) {
-            currentLevel++;
-            displayTime += 250;
+            displayTime += 1000; // Add 1 extra second for every 3 correct answers
         }
+        
+        document.getElementById('level').textContent = `Level: ${currentLevel}`;
+        startNewRound();
     } else {
-        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Moving to the next number.`;
+        message.innerHTML = `Wrong! The correct answer was ${correctAnswer}.<br>Moving to next number.`;
         message.style.color = 'red';
-        correctStreak = 0;
-        if (currentLevel > 1) {
-            currentLevel--;
-            displayTime = Math.max(displayTime - 250, 3000);
-        }
+        setTimeout(() => {
+            startNewRound();
+        }, 2000); // Show the wrong message for 2 seconds before moving to next number
     }
     
-    document.getElementById('level').textContent = `Level: ${currentLevel}`;
     inputField.value = '';
-    startNewRound();
 }
 
 function startNewRound() {
-    currentNumber = generateNumber(currentLevel);
+    const numberLength = Math.max(1, currentLevel - Math.floor(currentLevel / 3));
+    currentNumber = generateNumber(numberLength);
     const message = document.getElementById('message');
     message.innerHTML = 'Remember the number!<br>Enter the digits in ascending order.';
     message.style.color = 'black';
@@ -136,8 +170,8 @@ function startNewRound() {
 
 function resetGame() {
     currentLevel = 1;
-    displayTime = 3000;
     correctStreak = 0;
+    displayTime = 3000;
     document.getElementById('level').textContent = 'Level: 1';
     document.getElementById('message').textContent = '';
     startNewRound();
