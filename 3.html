@@ -1,91 +1,91 @@
-<html><head><base href="https://websim.fun/"><title>Multiplication Table Coach</title><style>
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background-color: #f0f8ff;
-}
-.game-container {
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    text-align: center;
-    max-width: 600px;
-    width: 100%;
-}
-h1 {
-    color: #4a4a4a;
-}
-.question {
-    font-size: 24px;
-    margin: 20px 0;
-}
-input[type="number"] {
-    font-size: 18px;
-    padding: 5px;
-    width: 100px;
-}
-button {
-    font-size: 18px;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-button:hover {
-    background-color: #45a049;
-}
-.message {
-    margin-top: 20px;
-    font-weight: bold;
-}
-.correct {
-    color: green;
-}
-.incorrect {
-    color: red;
-}
-.question-queue {
-    margin-top: 20px;
-    text-align: left;
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    padding: 10px;
-}
-.question-entry {
-    margin-bottom: 5px;
-    padding: 5px;
-    border-radius: 5px;
-}
-.question-entry.correct {
-    background-color: #e6ffe6;
-}
-.question-entry.incorrect {
-    background-color: #ffe6e6;
-}
-.timer {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 20px 0;
-}
-#chart {
-    margin-top: 20px;
-}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-</head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="https://websim.fun/">
+    <title>Multiplication Table Coach</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
+        }
+        .game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #4a4a4a;
+        }
+        .question {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        input[type="number"] {
+            font-size: 18px;
+            padding: 5px;
+            width: 100px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .question-queue {
+            margin-top: 20px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .question-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .question-entry.correct {
+            background-color: #e6ffe6;
+        }
+        .question-entry.incorrect {
+            background-color: #ffe6e6;
+        }
+        #chart {
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
 <div class="game-container">
     <h1>Multiplication Table Coach</h1>
-    <div id="timer" class="timer">Time: 30s</div>
     <div id="question" class="question"></div>
     <form id="answerForm" method="GET" action="https://websim.fun/answer">
         <input type="number" id="answer" name="answer" required>
@@ -102,8 +102,6 @@ let wrongAnswers = [];
 let correctStreak = 0;
 let currentQuestion = {};
 let questionHistory = [];
-let timeLeft = 30;
-let timer;
 let correctCount = 0;
 let incorrectCount = 0;
 let chart;
@@ -156,7 +154,6 @@ function checkAnswer(userAnswer) {
         messageElement.className = "message correct";
         correctStreak++;
         correctCount++;
-        timeLeft += 10;
         playConfetti();  // Play confetti effect for correct answers
     } else {
         messageElement.textContent = `Incorrect. The correct answer is ${currentQuestion.answer}.`;
@@ -164,39 +161,14 @@ function checkAnswer(userAnswer) {
         wrongAnswers.push(currentQuestion);
         correctStreak = 0;
         incorrectCount++;
-        timeLeft = Math.max(timeLeft - 1, 0);
     }
     
     updateQuestionQueue(currentQuestion, userAnswer, isCorrect);
-    updateTimer();
     
     setTimeout(() => {
         messageElement.textContent = "";
         displayQuestion();
     }, 2000);
-}
-
-function updateTimer() {
-    document.getElementById('timer').textContent = `Time: ${timeLeft}s`;
-    if (timeLeft <= 0) {
-        endGame();
-    }
-}
-
-function startTimer() {
-    timer = setInterval(() => {
-        timeLeft--;
-        updateTimer();
-    }, 1000);
-}
-
-function endGame() {
-    clearInterval(timer);
-    document.getElementById('answerForm').style.display = 'none';
-    document.getElementById('question').style.display = 'none';
-    document.getElementById('questionQueue').style.display = 'none';
-    document.getElementById('restartButton').style.display = 'block';
-    showChart();
 }
 
 function showChart() {
@@ -221,7 +193,6 @@ function showChart() {
 }
 
 function restartGame() {
-    timeLeft = 30;
     correctCount = 0;
     incorrectCount = 0;
     wrongAnswers = [];
@@ -238,7 +209,6 @@ function restartGame() {
     }
     
     displayQuestion();
-    startTimer();
 }
 
 document.getElementById('answerForm').addEventListener('submit', function(e) {
@@ -251,6 +221,6 @@ document.getElementById('answerForm').addEventListener('submit', function(e) {
 document.getElementById('restartButton').addEventListener('click', restartGame);
 
 displayQuestion();
-startTimer();
 </script>
-</body></html>
+</body>
+</html>
