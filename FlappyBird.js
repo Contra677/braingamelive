@@ -4,6 +4,9 @@ const ctx = canvas.getContext('2d');
 const jumpHeightSlider = document.getElementById('jumpHeightSlider');
 const gravitySlider = document.getElementById('gravitySlider');
 
+const jumpHeightValue = document.getElementById('jumpHeightValue');
+const gravityValue = document.getElementById('gravityValue');
+
 canvas.width = 320;
 canvas.height = 480;
 
@@ -134,6 +137,15 @@ function updateGame() {
 
     requestAnimationFrame(updateGame);
 }
+
+// Update the output values for the sliders
+jumpHeightSlider.addEventListener('input', function() {
+    jumpHeightValue.textContent = jumpHeightSlider.value;
+});
+
+gravitySlider.addEventListener('input', function() {
+    gravityValue.textContent = gravitySlider.value;
+});
 
 // Handle keyboard and touch input
 document.addEventListener('keydown', (event) => {
