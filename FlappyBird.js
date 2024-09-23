@@ -29,6 +29,7 @@ let bird = {
         if (this.y + this.height > canvas.height) {
             this.y = canvas.height - this.height;
             this.velocity = 0;
+            loseLife();  // Lose a life if the bird hits the ground
         }
         if (this.y < 0) {
             this.y = 0;
@@ -46,6 +47,8 @@ let pipeWidth = 30;
 let pipeGap = 100;
 let frame = 0;
 let score = 0;
+let lives = 3;         // Add lives counter
+let distance = 0;      // Add distance traveled tracker
 
 function createPipe() {
     let pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
@@ -81,9 +84,19 @@ function checkCollision() {
             bird.x + bird.width > pipe.x &&
             (bird.y < pipe.topHeight || bird.y + bird.height > canvas.height - pipe.bottomHeight)
         ) {
-            resetGame();
+            loseLife();  // Lose a life on collision
         }
     });
+}
+
+function loseLife() {
+    lives--;
+    if (lives === 0) {
+        resetGame();
+    } else {
+        bird.y = 150;
+        bird.velocity = 0;
+    }
 }
 
 function resetGame() {
@@ -91,12 +104,26 @@ function resetGame() {
     bird.velocity = 0;
     pipes = [];
     score = 0;
+    lives = 3;      // Reset lives
+    distance = 0;   // Reset distance
 }
 
 function drawScore() {
     ctx.fillStyle = "black";
     ctx.font = "20px Arial";
     ctx.fillText(`Score: ${score}`, 10, 30);
+}
+
+function drawLives() {
+    ctx.fillStyle = "red";
+    ctx.font = "20px Arial";
+    ctx.fillText(`Lives: ${lives}`, 10, 50);
+}
+
+function drawDistance() {
+    ctx.fillStyle = "black";
+    ctx.font = "20px Arial";
+    ctx.fillText(`Distance: ${Math.floor(distance)}m`, 10, 70);
 }
 
 function drawSpline() {
@@ -130,7 +157,12 @@ function updateGame() {
     frame++;
     if (frame % 90 === 0) score++;
 
+    // Increment the distance traveled
+    distance += 0.05; // Increment the distance based on game speed
+
     drawScore();
+    drawLives();     // Draw lives
+    drawDistance();  // Draw distance traveled
 
     // Draw the optimal trajectory spline
     drawSpline();
