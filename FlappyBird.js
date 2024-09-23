@@ -1,6 +1,9 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+const jumpHeightSlider = document.getElementById('jumpHeightSlider');
+const gravitySlider = document.getElementById('gravitySlider');
+
 canvas.width = 320;
 canvas.height = 480;
 
@@ -9,14 +12,15 @@ let bird = {
     y: 150,
     width: 20,
     height: 20,
-    gravity: 0.6,
-    lift: -10,
+    gravity: parseFloat(gravitySlider.value),
+    lift: parseFloat(jumpHeightSlider.value),
     velocity: 0,
     draw() {
         ctx.fillStyle = "yellow";
         ctx.fillRect(this.x, this.y, this.width, this.height);
     },
     update() {
+        this.gravity = parseFloat(gravitySlider.value);
         this.velocity += this.gravity;
         this.y += this.velocity;
         if (this.y + this.height > canvas.height) {
@@ -29,6 +33,7 @@ let bird = {
         }
     },
     flap() {
+        this.lift = parseFloat(jumpHeightSlider.value);
         this.velocity = this.lift;
     }
 };
@@ -91,6 +96,24 @@ function drawScore() {
     ctx.fillText(`Score: ${score}`, 10, 30);
 }
 
+function drawSpline() {
+    ctx.beginPath();
+    ctx.moveTo(bird.x, bird.y);
+
+    let tempVelocity = bird.velocity;
+    let tempY = bird.y;
+    for (let i = 0; i < 100; i++) {
+        tempVelocity += parseFloat(gravitySlider.value);
+        tempY += tempVelocity;
+        if (tempY + bird.height > canvas.height || tempY < 0) break;
+        ctx.lineTo(bird.x + i * 2, tempY);
+    }
+
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
 function updateGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -105,6 +128,9 @@ function updateGame() {
     if (frame % 90 === 0) score++;
 
     drawScore();
+
+    // Draw the optimal trajectory spline
+    drawSpline();
 
     requestAnimationFrame(updateGame);
 }
