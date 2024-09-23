@@ -135,10 +135,17 @@ function updateGame() {
     requestAnimationFrame(updateGame);
 }
 
+// Handle keyboard and touch input
 document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
         bird.flap();
     }
 });
 
+// Handle touch events for iOS and other mobile devices
+canvas.addEventListener('touchstart', () => {
+    bird.flap();
+});
+
+// Call the game loop
 updateGame();
