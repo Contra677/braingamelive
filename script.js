@@ -29,7 +29,6 @@ canvas.width = 320;
 canvas.height = 480;
 
 let scrollSpeed = parseFloat(scrollSpeedSlider.value);
-let pipeFrequency = 85; // Set initial value to 85
 
 // Skinning system
 const skins = {
@@ -106,6 +105,7 @@ let bird = {
 let pipes = [];
 let pipeWidth = parseFloat(obstacleSizeSlider.value);
 let pipeGap = parseFloat(openingHeightSlider.value);
+let pipeFrequency = parseInt(obstacleFrequencySlider.value);
 let frame = 0;
 let score = 0;
 let lives = 3;
@@ -267,7 +267,7 @@ canvas.addEventListener('touchstart', () => {
 // Handle control visibility toggle using the letter "X"
 toggleControlsIcon.addEventListener('click', () => {
     controlsDiv.classList.toggle('hidden');
-    toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? 'Show' : 'Hide'; // Toggle text
+    toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? 'X' : 'X';
 });
 
 // Call the game loop
