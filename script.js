@@ -1,7 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Get all the slider elements
+// Get slider elements and output values
 const jumpHeightSlider = document.getElementById('jumpHeightSlider');
 const gravitySlider = document.getElementById('gravitySlider');
 const playerSizeSlider = document.getElementById('playerSizeSlider');
@@ -11,7 +11,7 @@ const obstacleFrequencySlider = document.getElementById('obstacleFrequencySlider
 const scrollSpeedSlider = document.getElementById('scrollSpeedSlider');
 const skinSelector = document.getElementById('skinSelector');
 
-// Get the output values for sliders
+// Output values
 const jumpHeightValue = document.getElementById('jumpHeightValue');
 const gravityValue = document.getElementById('gravityValue');
 const playerSizeValue = document.getElementById('playerSizeValue');
@@ -30,7 +30,7 @@ canvas.height = 480;
 
 let scrollSpeed = parseFloat(scrollSpeedSlider.value);
 
-// Skinning system
+// Skin system
 const skins = {
     default: {
         background: 'images/default_bg.png',
@@ -68,6 +68,7 @@ function loadSkinImages() {
 
 loadSkinImages();
 
+// Bird object
 let bird = {
     x: 50,
     y: 150,
@@ -102,6 +103,7 @@ let bird = {
     }
 };
 
+// Pipe handling
 let pipes = [];
 let pipeWidth = parseFloat(obstacleSizeSlider.value);
 let pipeGap = parseFloat(openingHeightSlider.value);
@@ -114,7 +116,7 @@ let distance = 0;
 function createPipe() {
     let pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
     pipes.push({
-        x: canvas.width,
+        x: canvas.width, // Start just off the right side of the canvas
         topHeight: pipeHeight,
         bottomHeight: canvas.height - pipeHeight - pipeGap
     });
@@ -138,9 +140,9 @@ function updatePipes() {
     pipes.forEach(pipe => {
         pipe.x -= scrollSpeed;
     });
-    pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
+    pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0); // Remove pipes that go off the screen
     if (frame % pipeFrequency === 0) {
-        createPipe();
+        createPipe(); // Create a new pipe every `pipeFrequency` frames
     }
 }
 
@@ -259,12 +261,11 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-// Handle touch events for iOS and other mobile devices
 canvas.addEventListener('touchstart', () => {
     bird.flap();
 });
 
-// Handle control visibility toggle using the letter "X"
+// Toggle controls visibility
 toggleControlsIcon.addEventListener('click', () => {
     controlsDiv.classList.toggle('hidden');
     toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? 'X' : 'X';
