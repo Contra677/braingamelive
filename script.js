@@ -7,6 +7,9 @@ const gravitySlider = document.getElementById('gravitySlider');
 const jumpHeightValue = document.getElementById('jumpHeightValue'); // Element showing jump height
 const gravityValue = document.getElementById('gravityValue'); // Element showing gravity
 
+const toggleControlsIcon = document.getElementById('toggleControlsIcon');
+const controlsDiv = document.getElementById('controls');
+
 canvas.width = 320;
 canvas.height = 480;
 
@@ -168,6 +171,12 @@ document.addEventListener('keydown', (event) => {
 // Handle touch events for iOS and other mobile devices
 canvas.addEventListener('touchstart', () => {
     bird.flap();
+});
+
+// Handle control visibility toggle using the letter "X"
+toggleControlsIcon.addEventListener('click', () => {
+    controlsDiv.classList.toggle('hidden');
+    toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? 'X' : 'X';
 });
 
 // Call the game loop
