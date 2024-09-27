@@ -1,23 +1,35 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Get all the slider elements
 const jumpHeightSlider = document.getElementById('jumpHeightSlider');
 const gravitySlider = document.getElementById('gravitySlider');
+const playerSizeSlider = document.getElementById('playerSizeSlider');
+const obstacleSizeSlider = document.getElementById('obstacleSizeSlider');
+const openingHeightSlider = document.getElementById('openingHeightSlider');
+const obstacleFrequencySlider = document.getElementById('obstacleFrequencySlider');
 
-const jumpHeightValue = document.getElementById('jumpHeightValue'); // Element showing jump height
-const gravityValue = document.getElementById('gravityValue'); // Element showing gravity
+// Get the output values for sliders
+const jumpHeightValue = document.getElementById('jumpHeightValue');
+const gravityValue = document.getElementById('gravityValue');
+const playerSizeValue = document.getElementById('playerSizeValue');
+const obstacleSizeValue = document.getElementById('obstacleSizeValue');
+const openingHeightValue = document.getElementById('openingHeightValue');
+const obstacleFrequencyValue = document.getElementById('obstacleFrequencyValue');
 
+// Toggle controls
 const toggleControlsIcon = document.getElementById('toggleControlsIcon');
 const controlsDiv = document.getElementById('controls');
 
+// Canvas dimensions
 canvas.width = 320;
 canvas.height = 480;
 
 let bird = {
     x: 50,
     y: 150,
-    width: 20,
-    height: 20,
+    width: parseFloat(playerSizeSlider.value),
+    height: parseFloat(playerSizeSlider.value),
     gravity: parseFloat(gravitySlider.value),
     lift: parseFloat(jumpHeightSlider.value),
     velocity: 0,
@@ -29,10 +41,13 @@ let bird = {
         this.gravity = parseFloat(gravitySlider.value);
         this.velocity += this.gravity;
         this.y += this.velocity;
+        this.width = parseFloat(playerSizeSlider.value);
+        this.height = parseFloat(playerSizeSlider.value);
+
         if (this.y + this.height > canvas.height) {
             this.y = canvas.height - this.height;
             this.velocity = 0;
-            loseLife();  // Lose a life if the bird hits the ground
+            loseLife();
         }
         if (this.y < 0) {
             this.y = 0;
@@ -41,17 +56,18 @@ let bird = {
     },
     flap() {
         this.lift = parseFloat(jumpHeightSlider.value);
-        this.velocity = -this.lift; // Ensure the velocity is negative for the upward jump
+        this.velocity = -this.lift;
     }
 };
 
 let pipes = [];
-let pipeWidth = 30;
-let pipeGap = 100;
+let pipeWidth = parseFloat(obstacleSizeSlider.value);
+let pipeGap = parseFloat(openingHeightSlider.value);
+let pipeFrequency = parseInt(obstacleFrequencySlider.value);  // Frequency of pipe creation
 let frame = 0;
 let score = 0;
-let lives = 3;         // Add lives counter
-let distance = 0;      // Add distance traveled tracker
+let lives = 3;
+let distance = 0;
 
 function createPipe() {
     let pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
@@ -63,6 +79,8 @@ function createPipe() {
 }
 
 function drawPipes() {
+    pipeWidth = parseFloat(obstacleSizeSlider.value); // Update obstacle size dynamically
+    pipeGap = parseFloat(openingHeightSlider.value); // Update opening height dynamically
     pipes.forEach(pipe => {
         ctx.fillStyle = "green";
         ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
@@ -75,7 +93,7 @@ function updatePipes() {
         pipe.x -= 2;
     });
     pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
-    if (frame % 90 === 0) {
+    if (frame % pipeFrequency === 0) {
         createPipe();
     }
 }
@@ -87,7 +105,7 @@ function checkCollision() {
             bird.x + bird.width > pipe.x &&
             (bird.y < pipe.topHeight || bird.y + bird.height > canvas.height - pipe.bottomHeight)
         ) {
-            loseLife();  // Lose a life on collision
+            loseLife();
         }
     });
 }
@@ -107,8 +125,8 @@ function resetGame() {
     bird.velocity = 0;
     pipes = [];
     score = 0;
-    lives = 3;      // Reset lives
-    distance = 0;   // Reset distance
+    lives = 3;
+    distance = 0;
 }
 
 function drawScore() {
@@ -140,14 +158,13 @@ function updateGame() {
     checkCollision();
 
     frame++;
-    if (frame % 90 === 0) score++;
+    if (frame % pipeFrequency === 0) score++;
 
-    // Increment the distance traveled
-    distance += 0.05; // Increment the distance based on game speed
+    distance += 0.05;
 
     drawScore();
-    drawLives();     // Draw lives
-    drawDistance();  // Draw distance traveled
+    drawLives();
+    drawDistance();
 
     requestAnimationFrame(updateGame);
 }
@@ -159,6 +176,22 @@ jumpHeightSlider.addEventListener('input', function() {
 
 gravitySlider.addEventListener('input', function() {
     gravityValue.textContent = gravitySlider.value;
+});
+
+playerSizeSlider.addEventListener('input', function() {
+    playerSizeValue.textContent = playerSizeSlider.value;
+});
+
+obstacleSizeSlider.addEventListener('input', function() {
+    obstacleSizeValue.textContent = obstacleSizeSlider.value;
+});
+
+openingHeightSlider.addEventListener('input', function() {
+    openingHeightValue.textContent = openingHeightSlider.value;
+});
+
+obstacleFrequencySlider.addEventListener('input', function() {
+    obstacleFrequencyValue.textContent = obstacleFrequencySlider.value;
 });
 
 // Handle keyboard and touch input
