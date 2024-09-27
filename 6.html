@@ -7,38 +7,36 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <div id="controls">
-            <label for="jumpHeightSlider">Jump Height: <span id="jumpHeightValue">10</span></label>
-            <input type="range" id="jumpHeightSlider" min="1" max="50" value="10">
-
-            <label for="gravitySlider">Gravity: <span id="gravityValue">0.6</span></label>
-            <input type="range" id="gravitySlider" min="0.1" max="2" step="0.1" value="0.6">
-
-            <label for="playerSizeSlider">Player Size: <span id="playerSizeValue">30</span></label>
-            <input type="range" id="playerSizeSlider" min="10" max="100" value="30">
-
-            <label for="obstacleSizeSlider">Obstacle Size: <span id="obstacleSizeValue">40</span></label>
-            <input type="range" id="obstacleSizeSlider" min="20" max="100" value="40">
-
-            <label for="openingHeightSlider">Opening Height: <span id="openingHeightValue">100</span></label>
-            <input type="range" id="openingHeightSlider" min="50" max="200" value="100">
-
-            <label for="obstacleFrequencySlider">Obstacle Frequency: <span id="obstacleFrequencyValue">85</span></label>
-            <input type="range" id="obstacleFrequencySlider" min="1" max="100" value="85"> <!-- Changed default value to 85 -->
-
-            <label for="scrollSpeedSlider">Scroll Speed: <span id="scrollSpeedValue">2</span></label>
-            <input type="range" id="scrollSpeedSlider" min="1" max="10" value="2">
-
-            <label for="skinSelector">Skin: </label>
-            <select id="skinSelector">
-                <option value="default">Default</option>
-                <option value="night">Night</option>
-                <option value="underwater">Underwater</option>
-            </select>
-        </div>
-        <span id="toggleControlsIcon">X</span>
+    <canvas id="gameCanvas"></canvas>
+    <div id="controls">
+        <button id="toggleControlsIcon">X</button>
+        <label for="jumpHeightSlider">Jump Height: <span id="jumpHeightValue">10</span></label>
+        <input type="range" id="jumpHeightSlider" class="slider" min="1" max="20" value="10">
+        
+        <label for="gravitySlider">Gravity: <span id="gravityValue">0.5</span></label>
+        <input type="range" id="gravitySlider" class="slider" min="0.1" max="5" step="0.1" value="0.5">
+        
+        <label for="playerSizeSlider">Player Size: <span id="playerSizeValue">30</span></label>
+        <input type="range" id="playerSizeSlider" class="slider" min="10" max="100" value="30">
+        
+        <label for="obstacleSizeSlider">Obstacle Size: <span id="obstacleSizeValue">30</span></label>
+        <input type="range" id="obstacleSizeSlider" class="slider" min="10" max="100" value="30">
+        
+        <label for="openingHeightSlider">Opening Height: <span id="openingHeightValue">100</span></label>
+        <input type="range" id="openingHeightSlider" class="slider" min="10" max="200" value="100">
+        
+        <label for="obstacleFrequencySlider">Obstacle Frequency: <span id="obstacleFrequencyValue">85</span></label>
+        <input type="range" id="obstacleFrequencySlider" class="slider" min="1" max="100" value="85">
+        
+        <label for="scrollSpeedSlider">Scroll Speed: <span id="scrollSpeedValue">2</span></label>
+        <input type="range" id="scrollSpeedSlider" class="slider" min="1" max="10" value="2">
+        
+        <label for="skinSelector">Select Skin:</label>
+        <select id="skinSelector">
+            <option value="default">Default</option>
+            <option value="night">Night</option>
+            <option value="underwater">Underwater</option>
+        </select>
     </div>
     <script src="script.js"></script>
 </body>
