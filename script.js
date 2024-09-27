@@ -8,6 +8,8 @@ const playerSizeSlider = document.getElementById('playerSizeSlider');
 const obstacleSizeSlider = document.getElementById('obstacleSizeSlider');
 const openingHeightSlider = document.getElementById('openingHeightSlider');
 const obstacleFrequencySlider = document.getElementById('obstacleFrequencySlider');
+const scrollSpeedSlider = document.getElementById('scrollSpeedSlider');
+const skinSelector = document.getElementById('skinSelector');
 
 // Get the output values for sliders
 const jumpHeightValue = document.getElementById('jumpHeightValue');
@@ -16,6 +18,7 @@ const playerSizeValue = document.getElementById('playerSizeValue');
 const obstacleSizeValue = document.getElementById('obstacleSizeValue');
 const openingHeightValue = document.getElementById('openingHeightValue');
 const obstacleFrequencyValue = document.getElementById('obstacleFrequencyValue');
+const scrollSpeedValue = document.getElementById('scrollSpeedValue');
 
 // Toggle controls
 const toggleControlsIcon = document.getElementById('toggleControlsIcon');
@@ -24,6 +27,47 @@ const controlsDiv = document.getElementById('controls');
 // Canvas dimensions
 canvas.width = 320;
 canvas.height = 480;
+
+let scrollSpeed = parseFloat(scrollSpeedSlider.value);
+let pipeFrequency = 85; // Set initial value to 85
+
+// Skinning system
+const skins = {
+    default: {
+        background: 'images/default_bg.png',
+        player: 'images/default_player.gif',
+        obstacle: 'images/default_obstacle.png',
+        obstacleCap: 'images/default_obstacle_cap.png'
+    },
+    night: {
+        background: 'images/night_bg.png',
+        player: 'images/night_player.gif',
+        obstacle: 'images/night_obstacle.png',
+        obstacleCap: 'images/night_obstacle_cap.png'
+    },
+    underwater: {
+        background: 'images/underwater_bg.png',
+        player: 'images/underwater_player.gif',
+        obstacle: 'images/underwater_obstacle.png',
+        obstacleCap: 'images/underwater_obstacle_cap.png'
+    }
+};
+
+let currentSkin = skins.default;
+
+// Load images
+let playerImg = new Image();
+let obstacleImg = new Image();
+let obstacleCapImg = new Image();
+
+function loadSkinImages() {
+    playerImg.src = currentSkin.player;
+    obstacleImg.src = currentSkin.obstacle;
+    obstacleCapImg.src = currentSkin.obstacleCap;
+    canvas.style.backgroundImage = `url(${currentSkin.background})`;
+}
+
+loadSkinImages();
 
 let bird = {
     x: 50,
@@ -34,8 +78,7 @@ let bird = {
     lift: parseFloat(jumpHeightSlider.value),
     velocity: 0,
     draw() {
-        ctx.fillStyle = "yellow";
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(playerImg, this.x, this.y, this.width, this.height);
     },
     update() {
         this.gravity = parseFloat(gravitySlider.value);
@@ -63,7 +106,6 @@ let bird = {
 let pipes = [];
 let pipeWidth = parseFloat(obstacleSizeSlider.value);
 let pipeGap = parseFloat(openingHeightSlider.value);
-let pipeFrequency = parseInt(obstacleFrequencySlider.value);  // Frequency of pipe creation
 let frame = 0;
 let score = 0;
 let lives = 3;
@@ -79,18 +121,22 @@ function createPipe() {
 }
 
 function drawPipes() {
-    pipeWidth = parseFloat(obstacleSizeSlider.value); // Update obstacle size dynamically
-    pipeGap = parseFloat(openingHeightSlider.value); // Update opening height dynamically
+    pipeWidth = parseFloat(obstacleSizeSlider.value);
+    pipeGap = parseFloat(openingHeightSlider.value);
     pipes.forEach(pipe => {
-        ctx.fillStyle = "green";
-        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
-        ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight, pipeWidth, pipe.bottomHeight);
+        // Draw the pipe body
+        ctx.drawImage(obstacleImg, pipe.x, 0, pipeWidth, pipe.topHeight);
+        ctx.drawImage(obstacleImg, pipe.x, canvas.height - pipe.bottomHeight, pipeWidth, pipe.bottomHeight);
+        
+        // Draw the pipe caps
+        ctx.drawImage(obstacleCapImg, pipe.x, pipe.topHeight - 10, pipeWidth, 20);
+        ctx.drawImage(obstacleCapImg, pipe.x, canvas.height - pipe.bottomHeight - 10, pipeWidth, 20);
     });
 }
 
 function updatePipes() {
     pipes.forEach(pipe => {
-        pipe.x -= 2;
+        pipe.x -= scrollSpeed;
     });
     pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
     if (frame % pipeFrequency === 0) {
@@ -160,7 +206,7 @@ function updateGame() {
     frame++;
     if (frame % pipeFrequency === 0) score++;
 
-    distance += 0.05;
+    distance += scrollSpeed / 40;
 
     drawScore();
     drawLives();
@@ -192,6 +238,18 @@ openingHeightSlider.addEventListener('input', function() {
 
 obstacleFrequencySlider.addEventListener('input', function() {
     obstacleFrequencyValue.textContent = obstacleFrequencySlider.value;
+    pipeFrequency = parseInt(obstacleFrequencySlider.value);
+});
+
+scrollSpeedSlider.addEventListener('input', function() {
+    scrollSpeedValue.textContent = scrollSpeedSlider.value;
+    scrollSpeed = parseFloat(scrollSpeedSlider.value);
+});
+
+// Handle skin selection
+skinSelector.addEventListener('change', function() {
+    currentSkin = skins[this.value];
+    loadSkinImages();
 });
 
 // Handle keyboard and touch input
@@ -209,7 +267,7 @@ canvas.addEventListener('touchstart', () => {
 // Handle control visibility toggle using the letter "X"
 toggleControlsIcon.addEventListener('click', () => {
     controlsDiv.classList.toggle('hidden');
-    toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? 'X' : 'X';
+    toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? 'Show' : 'Hide'; // Toggle text
 });
 
 // Call the game loop
