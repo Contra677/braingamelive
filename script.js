@@ -1,6 +1,14 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Update canvas dimensions
+canvas.width = 960;
+canvas.height = 540;
+
+// Parallax background variables
+let backgroundLayers = [];
+let backgroundSpeeds = [1, 3]; // Example speeds for two background layers
+
 // Get slider elements and output values
 const jumpHeightSlider = document.getElementById('jumpHeightSlider');
 const gravitySlider = document.getElementById('gravitySlider');
@@ -24,28 +32,24 @@ const scrollSpeedValue = document.getElementById('scrollSpeedValue');
 const toggleControlsIcon = document.getElementById('toggleControlsIcon');
 const controlsDiv = document.getElementById('controls');
 
-// Canvas dimensions
-canvas.width = 320;
-canvas.height = 480;
-
 let scrollSpeed = parseFloat(scrollSpeedSlider.value);
 
-// Skin system
+// Skin system with multiple backgrounds
 const skins = {
     default: {
-        background: 'images/default_bg.png',
+        background: ['images/default_bg.png', 'images/default_bg_02.png'], // Two backgrounds for parallax effect
         player: 'images/default_player.gif',
         obstacle: 'images/default_obstacle.png',
         obstacleCap: 'images/default_obstacle_cap.png'
     },
     night: {
-        background: 'images/night_bg.png',
+        background: ['images/night_bg.png', 'images/night_bg_02.png'],
         player: 'images/night_player.gif',
         obstacle: 'images/night_obstacle.png',
         obstacleCap: 'images/night_obstacle_cap.png'
     },
     underwater: {
-        background: 'images/underwater_bg.png',
+        background: ['images/underwater_bg.png', 'images/underwater_bg_02.png'],
         player: 'images/underwater_player.gif',
         obstacle: 'images/underwater_obstacle.png',
         obstacleCap: 'images/underwater_obstacle_cap.png'
@@ -54,24 +58,39 @@ const skins = {
 
 let currentSkin = skins.default;
 
-// Load images
+// Load images with error handling
 let playerImg = new Image();
 let obstacleImg = new Image();
 let obstacleCapImg = new Image();
 
+playerImg.onerror = () => console.error('Failed to load player image.');
+obstacleImg.onerror = () => console.error('Failed to load obstacle image.');
+obstacleCapImg.onerror = () => console.error('Failed to load obstacle cap image.');
+
 function loadSkinImages() {
+    console.log("Loading skin images...");
     playerImg.src = currentSkin.player;
     obstacleImg.src = currentSkin.obstacle;
     obstacleCapImg.src = currentSkin.obstacleCap;
-    canvas.style.backgroundImage = `url(${currentSkin.background})`;
+
+    // Load multiple background layers
+    backgroundLayers = currentSkin.background.map((src) => {
+        let img = new Image();
+        img.src = src;
+        img.onerror = () => console.error(`Failed to load background image: ${src}`);
+        return {
+            image: img,
+            x: 0  // Initial position for each layer
+        };
+    });
 }
 
 loadSkinImages();
 
 // Bird object
 let bird = {
-    x: 50,
-    y: 150,
+    x: 100,
+    y: canvas.height / 2,
     width: parseFloat(playerSizeSlider.value),
     height: parseFloat(playerSizeSlider.value),
     gravity: parseFloat(gravitySlider.value),
@@ -114,9 +133,10 @@ let lives = 3;
 let distance = 0;
 
 function createPipe() {
+    console.log("Creating pipes...");
     let pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
     pipes.push({
-        x: canvas.width, // Start just off the right side of the canvas
+        x: canvas.width,
         topHeight: pipeHeight,
         bottomHeight: canvas.height - pipeHeight - pipeGap
     });
@@ -126,11 +146,8 @@ function drawPipes() {
     pipeWidth = parseFloat(obstacleSizeSlider.value);
     pipeGap = parseFloat(openingHeightSlider.value);
     pipes.forEach(pipe => {
-        // Draw the pipe body
         ctx.drawImage(obstacleImg, pipe.x, 0, pipeWidth, pipe.topHeight);
         ctx.drawImage(obstacleImg, pipe.x, canvas.height - pipe.bottomHeight, pipeWidth, pipe.bottomHeight);
-        
-        // Draw the pipe caps
         ctx.drawImage(obstacleCapImg, pipe.x, pipe.topHeight - 10, pipeWidth, 20);
         ctx.drawImage(obstacleCapImg, pipe.x, canvas.height - pipe.bottomHeight - 10, pipeWidth, 20);
     });
@@ -140,9 +157,9 @@ function updatePipes() {
     pipes.forEach(pipe => {
         pipe.x -= scrollSpeed;
     });
-    pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0); // Remove pipes that go off the screen
+    pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
     if (frame % pipeFrequency === 0) {
-        createPipe(); // Create a new pipe every `pipeFrequency` frames
+        createPipe();
     }
 }
 
@@ -163,13 +180,13 @@ function loseLife() {
     if (lives === 0) {
         resetGame();
     } else {
-        bird.y = 150;
+        bird.y = canvas.height / 2;
         bird.velocity = 0;
     }
 }
 
 function resetGame() {
-    bird.y = 150;
+    bird.y = canvas.height / 2;
     bird.velocity = 0;
     pipes = [];
     score = 0;
@@ -179,24 +196,43 @@ function resetGame() {
 
 function drawScore() {
     ctx.fillStyle = "black";
-    ctx.font = "20px Arial";
-    ctx.fillText(`Score: ${score}`, 10, 30);
+    ctx.font = "24px Arial";
+    ctx.fillText(`Score: ${score}`, 20, 40);
 }
 
 function drawLives() {
     ctx.fillStyle = "red";
-    ctx.font = "20px Arial";
-    ctx.fillText(`Lives: ${lives}`, 10, 50);
+    ctx.font = "24px Arial";
+    ctx.fillText(`Lives: ${lives}`, 20, 70);
 }
 
 function drawDistance() {
     ctx.fillStyle = "black";
-    ctx.font = "20px Arial";
-    ctx.fillText(`Distance: ${Math.floor(distance)}m`, 10, 70);
+    ctx.font = "24px Arial";
+    ctx.fillText(`Distance: ${Math.floor(distance)}m`, 20, 100);
+}
+
+// Draw and update the parallax background layers
+function drawParallaxBackground() {
+    backgroundLayers.forEach((layer, index) => {
+        ctx.drawImage(layer.image, layer.x, 0, canvas.width, canvas.height);
+        ctx.drawImage(layer.image, layer.x + canvas.width, 0, canvas.width, canvas.height);
+
+        // Move each background layer at a different speed
+        layer.x -= backgroundSpeeds[index];
+
+        // Reset background position for continuous scrolling
+        if (layer.x <= -canvas.width) {
+            layer.x = 0;
+        }
+    });
 }
 
 function updateGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw and move parallax background
+    drawParallaxBackground();
 
     bird.draw();
     bird.update();
@@ -268,8 +304,9 @@ canvas.addEventListener('touchstart', () => {
 // Toggle controls visibility
 toggleControlsIcon.addEventListener('click', () => {
     controlsDiv.classList.toggle('hidden');
-    toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? 'X' : 'X';
+    toggleControlsIcon.textContent = controlsDiv.classList.contains('hidden') ? '☰' : 'X';
 });
 
 // Call the game loop
+console.log("Starting game...");
 updateGame();
