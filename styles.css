@@ -9,7 +9,8 @@ body {
 
 canvas {
     border: 2px solid black;
-    display: block;
+    width: 960px;
+    height: 540px;
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -52,4 +53,15 @@ label {
 
 #skinSelector {
     margin-top: 10px;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 960px) {
+    #controls {
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 300px;
+    }
 }
