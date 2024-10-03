@@ -7,7 +7,7 @@ canvas.height = 540;
 
 // Parallax background variables
 let backgroundLayers = [];
-let backgroundSpeeds = [1, 3]; // Example speeds for two background layers
+let backgroundSpeeds = [0.5, 1.5]; // Slower layer 1 and slightly faster layer 2
 
 // Get slider elements and output values
 const jumpHeightSlider = document.getElementById('jumpHeightSlider');
@@ -28,16 +28,22 @@ const openingHeightValue = document.getElementById('openingHeightValue');
 const obstacleFrequencyValue = document.getElementById('obstacleFrequencyValue');
 const scrollSpeedValue = document.getElementById('scrollSpeedValue');
 
+// Adjust jump height slider
+jumpHeightSlider.min = 5;
+jumpHeightSlider.max = 20;
+jumpHeightSlider.value = 10;
+jumpHeightValue.textContent = jumpHeightSlider.value;
+
 // Toggle controls
 const toggleControlsIcon = document.getElementById('toggleControlsIcon');
 const controlsDiv = document.getElementById('controls');
 
 let scrollSpeed = parseFloat(scrollSpeedSlider.value);
 
-// Skin system with multiple backgrounds
+// Skin system
 const skins = {
     default: {
-        background: ['images/default_bg.png', 'images/default_bg_02.png'], // Two backgrounds for parallax effect
+        background: ['images/default_bg.png', 'images/default_bg_02.png'],
         player: 'images/default_player.gif',
         obstacle: 'images/default_obstacle.png',
         obstacleCap: 'images/default_obstacle_cap.png'
@@ -90,35 +96,44 @@ loadSkinImages();
 // Bird object
 let bird = {
     x: 100,
-    y: canvas.height / 2,
-    width: parseFloat(playerSizeSlider.value),
-    height: parseFloat(playerSizeSlider.value),
+    y: canvas.height / 2,  // Start at the center of the canvas vertically
+    width: parseFloat(playerSizeSlider.value),  // Width from slider
+    height: parseFloat(playerSizeSlider.value), // Height from slider
     gravity: parseFloat(gravitySlider.value),
     lift: parseFloat(jumpHeightSlider.value),
     velocity: 0,
+    alive: true, // Ensure the bird starts alive
     draw() {
-        ctx.drawImage(playerImg, this.x, this.y, this.width, this.height);
+        if (this.alive) {
+            ctx.drawImage(playerImg, this.x, this.y, this.width, this.height);
+        }
     },
     update() {
-        this.gravity = parseFloat(gravitySlider.value);
-        this.velocity += this.gravity;
-        this.y += this.velocity;
-        this.width = parseFloat(playerSizeSlider.value);
-        this.height = parseFloat(playerSizeSlider.value);
+        if (this.alive) {
+            this.gravity = parseFloat(gravitySlider.value);
+            this.velocity += this.gravity;
+            this.y += this.velocity;
+            this.width = parseFloat(playerSizeSlider.value);
+            this.height = parseFloat(playerSizeSlider.value);
 
-        if (this.y + this.height > canvas.height) {
-            this.y = canvas.height - this.height;
-            this.velocity = 0;
-            loseLife();
-        }
-        if (this.y < 0) {
-            this.y = 0;
-            this.velocity = 0;
+            // Ensure the bird stays within canvas bounds
+            if (this.y + this.height > canvas.height) {
+                this.y = canvas.height - this.height;
+                this.velocity = 0;
+                loseLife();  // Bird loses life if it hits the ground
+            }
+            if (this.y < 0) {
+                this.y = 0;
+                this.velocity = 0;
+                loseLife();  // Bird loses life if it hits the ceiling
+            }
         }
     },
     flap() {
-        this.lift = parseFloat(jumpHeightSlider.value);
-        this.velocity = -this.lift;
+        if (this.alive) {
+            this.lift = parseFloat(jumpHeightSlider.value);
+            this.velocity = -this.lift;
+        }
     }
 };
 
@@ -129,11 +144,10 @@ let pipeGap = parseFloat(openingHeightSlider.value);
 let pipeFrequency = parseInt(obstacleFrequencySlider.value);
 let frame = 0;
 let score = 0;
-let lives = 3;
+let lives = 3;  // Track lives
 let distance = 0;
 
 function createPipe() {
-    console.log("Creating pipes...");
     let pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
     pipes.push({
         x: canvas.width,
@@ -163,31 +177,42 @@ function updatePipes() {
     }
 }
 
-function checkCollision() {
+// Check collision for player and pipes
+function checkCollision(entity) {
     pipes.forEach(pipe => {
         if (
-            bird.x < pipe.x + pipeWidth &&
-            bird.x + bird.width > pipe.x &&
-            (bird.y < pipe.topHeight || bird.y + bird.height > canvas.height - pipe.bottomHeight)
+            entity.x < pipe.x + pipeWidth &&
+            entity.x + entity.width > pipe.x &&
+            (entity.y < pipe.topHeight || entity.y + entity.height > canvas.height - pipe.bottomHeight)
         ) {
-            loseLife();
+            loseLife();  // Lose life if the player hits the pipe
         }
     });
 }
 
+// Lose a life and respawn the bird if there are lives left
 function loseLife() {
     lives--;
-    if (lives === 0) {
-        resetGame();
+    if (lives > 0) {
+        console.log(`Lives left: ${lives}. Respawn.`);
+        respawnBird();
     } else {
-        bird.y = canvas.height / 2;
-        bird.velocity = 0;
+        console.log("Game over. Resetting game.");
+        resetGame();
     }
+}
+
+// Respawn the bird at its starting position after a collision
+function respawnBird() {
+    bird.y = canvas.height / 2;
+    bird.velocity = 0;
+    bird.alive = true;  // Set bird to alive state for respawn
 }
 
 function resetGame() {
     bird.y = canvas.height / 2;
     bird.velocity = 0;
+    bird.alive = true; // Reset bird's alive state
     pipes = [];
     score = 0;
     lives = 3;
@@ -234,12 +259,12 @@ function updateGame() {
     // Draw and move parallax background
     drawParallaxBackground();
 
-    bird.draw();
     bird.update();
+    bird.draw();
+    checkCollision(bird);  // Check collision for the player bird
 
     updatePipes();
     drawPipes();
-    checkCollision();
 
     frame++;
     if (frame % pipeFrequency === 0) score++;
@@ -292,13 +317,15 @@ skinSelector.addEventListener('change', function() {
 
 // Handle keyboard and touch input
 document.addEventListener('keydown', (event) => {
-    if (event.code === 'Space') {
+    if (event.code === 'Space' && bird.alive) {
         bird.flap();
     }
 });
 
 canvas.addEventListener('touchstart', () => {
-    bird.flap();
+    if (bird.alive) {
+        bird.flap();
+    }
 });
 
 // Toggle controls visibility
