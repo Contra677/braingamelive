@@ -3,51 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Flappy Bird with Ghost Bots</title>
+    <style>
+        /* Basic styles for the canvas and controls */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #gameCanvas {
+            border: 2px solid #000;
+            margin-bottom: 20px;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider {
+            width: 200px;
+        }
+
+        #toggleControlsIcon {
+            cursor: pointer;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <div id="toggleControlsIcon">X</div>
-    <canvas id="gameCanvas"></canvas>
-    
-    <!-- Controls section -->
+
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
     <div id="controls">
-        <label for="jumpHeightSlider">Jump Height</label>
-        <input type="range" id="jumpHeightSlider" min="10" max="100" value="50">
-        <span id="jumpHeightValue">50</span>
-
-        <label for="gravitySlider">Gravity</label>
-        <input type="range" id="gravitySlider" min="0.1" max="2" step="0.1" value="1">
-        <span id="gravityValue">1</span>
-
-        <label for="playerSizeSlider">Player Size</label>
-        <input type="range" id="playerSizeSlider" min="10" max="100" value="50">
-        <span id="playerSizeValue">50</span>
-
-        <label for="obstacleSizeSlider">Obstacle Size</label>
-        <input type="range" id="obstacleSizeSlider" min="10" max="100" value="50">
-        <span id="obstacleSizeValue">50</span>
-
-        <label for="openingHeightSlider">Opening Height</label>
-        <input type="range" id="openingHeightSlider" min="50" max="200" value="100">
-        <span id="openingHeightValue">100</span>
-
-        <label for="obstacleFrequencySlider">Obstacle Frequency</label>
-        <input type="range" id="obstacleFrequencySlider" min="30" max="200" value="100">
-        <span id="obstacleFrequencyValue">100</span>
-
-        <label for="scrollSpeedSlider">Scroll Speed</label>
-        <input type="range" id="scrollSpeedSlider" min="1" max="10" value="5">
-        <span id="scrollSpeedValue">5</span>
-
-        <label for="skinSelector">Choose Skin</label>
-        <select id="skinSelector">
-            <option value="default">Default</option>
-            <option value="night">Night</option>
-            <option value="underwater">Underwater</option>
-        </select>
+        <div class="control-group">
+            <label for="jumpHeightSlider">Jump Height:</label>
+            <input type="range" id="jumpHeightSlider" class="slider" min="5" max="20" value="10">
+            <span id="jumpHeightValue">10</span>
+        </div>
+        <div class="control-group">
+            <label for="gravitySlider">Gravity:</label>
+            <input type="range" id="gravitySlider" class="slider" min="0.1" max="2" step="0.1" value="1">
+            <span id="gravityValue">1</span>
+        </div>
+        <div class="control-group">
+            <label for="playerSizeSlider">Player Size:</label>
+            <input type="range" id="playerSizeSlider" class="slider" min="20" max="100" value="40">
+            <span id="playerSizeValue">40</span>
+        </div>
+        <div class="control-group">
+            <label for="obstacleSizeSlider">Obstacle Size:</label>
+            <input type="range" id="obstacleSizeSlider" class="slider" min="20" max="100" value="50">
+            <span id="obstacleSizeValue">50</span>
+        </div>
+        <div class="control-group">
+            <label for="openingHeightSlider">Opening Height:</label>
+            <input type="range" id="openingHeightSlider" class="slider" min="100" max="300" value="200">
+            <span id="openingHeightValue">200</span>
+        </div>
+        <div class="control-group">
+            <label for="obstacleFrequencySlider">Obstacle Frequency:</label>
+            <input type="range" id="obstacleFrequencySlider" class="slider" min="50" max="200" value="150">
+            <span id="obstacleFrequencyValue">150</span>
+        </div>
+        <div class="control-group">
+            <label for="scrollSpeedSlider">Scroll Speed:</label>
+            <input type="range" id="scrollSpeedSlider" class="slider" min="1" max="10" value="5">
+            <span id="scrollSpeedValue">5</span>
+        </div>
+        <div class="control-group">
+            <label for="numBotsSlider">Number of Bots:</label>
+            <input type="range" id="numBotsSlider" class="slider" min="1" max="20" value="5">
+            <span id="numBotsValue">5</span>
+        </div>
+        <div class="control-group">
+            <label for="skinSelector">Skin:</label>
+            <select id="skinSelector">
+                <option value="default">Default</option>
+                <option value="night">Night</option>
+                <option value="underwater">Underwater</option>
+            </select>
+        </div>
     </div>
 
+    <div id="toggleControlsIcon">☰</div>
+
+    <script src="bots.js"></script>
     <script src="script.js"></script>
+
 </body>
 </html>
